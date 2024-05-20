@@ -1,0 +1,54 @@
+[package]
+authors = ["Nick Wimmers <wimmers.nicholas@gmail.com>"]
+description = "Cross-platform library for searching the platform specific credential store, made possible by keyring-rs"
+homepage = "https://github.com/wiimmers/keyring-search"
+license = "MIT or Apache-2.0"
+name = "keyring-search"
+repository = "https://github.com/wiimmers/keyring-search.git"
+version = "0.1.0"
+rust-version = "1.68"
+exclude = [".github/"]
+edition = "2021"
+readme = "README.md"
+
+[features]
+default = ["platform-all"]
+platform-all = ["platform-linux", "platform-freebsd", "platform-openbsd", "platform-macos", "platform-ios", "platform-windows"]
+platform-linux = ["linux-secret-service", "linux-keyutils"]
+platform-freebsd = ["linux-secret-service"]
+platform-openbsd = ["linux-secret-service"]
+platform-macos = ["security-framework"]
+platform-ios = ["security-framework"]
+platform-windows = ["windows-sys", "regex", "byteorder"]
+linux-secret-service = ["linux-secret-service-rt-async-io-crypto-rust"]
+linux-secret-service-rt-async-io-crypto-rust = ["secret-service/rt-async-io-crypto-rust"]
+linux-secret-service-rt-tokio-crypto-rust = ["secret-service/rt-tokio-crypto-rust"]
+linux-secret-service-rt-async-io-crypto-openssl = ["secret-service/rt-async-io-crypto-openssl"]
+linux-secret-service-rt-tokio-crypto-openssl = ["secret-service/rt-tokio-crypto-openssl"]
+linux-no-secret-service = ["linux-default-keyutils"]
+linux-default-keyutils = ["linux-keyutils"]
+windows-test-threading = []
+
+[dependencies]
+lazy_static = "1"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+security-framework = { version = "2.6", optional = true }
+
+[target.'cfg(target_os = "ios")'.dependencies]
+security-framework = { version = "2.6", optional = true }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+secret-service = { version = "3", optional = true }
+linux-keyutils = { version = "0.2", features = ["std"], optional = true }
+
+[target.'cfg(target_os = "freebsd")'.dependencies]
+secret-service = { version = "3", optional = true }
+
+[target.'cfg(target_os = "openbsd")'.dependencies]
+secret-service = { version = "3", optional = true }
+
+[target.'cfg(target_os = "windows")'.dependencies]
+byteorder = { version = "1.2", optional = true }
+regex = { version = "1.10.4", optional = true }
+windows-sys = { version = "0.52", features = ["Win32_Foundation", "Win32_Security_Credentials"], optional = true }
