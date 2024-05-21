@@ -3,10 +3,8 @@ use std::collections::HashMap;
 use secret_service::blocking::SecretService;
 use secret_service::EncryptionType;
 
-use super::search::{
-    CredentialSearch, CredentialSearchApi, CredentialSearchResult,
-};
 use super::error::Error as ErrorCode;
+use super::search::{CredentialSearch, CredentialSearchApi, CredentialSearchResult};
 
 pub struct SsCredentialSearch {}
 
@@ -57,7 +55,7 @@ fn search_items(by: &str, query: &str) -> CredentialSearchResult {
 
             for (key, value) in attributes {
                 // Seahorse will add an additional attribute with key "xdg:schema"
-                // 
+                //
                 // This is negligible in practice and just specifies to type of credential
                 // for the keys and passwords application on gnome linux devices.
                 if key != "xdg:schema".to_string() {
@@ -79,8 +77,8 @@ fn search_items(by: &str, query: &str) -> CredentialSearchResult {
 
 #[cfg(test)]
 mod tests {
-    use keyring::{Entry, secret_service::SsCredential};
     use crate::{tests::generate_random_string, Limit, List, Search};
+    use keyring::{secret_service::SsCredential, Entry};
     use std::collections::HashSet;
 
     #[test]

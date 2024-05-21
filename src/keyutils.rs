@@ -1,9 +1,7 @@
 use std::collections::HashMap;
 
-use super::search::{
-    CredentialSearch, CredentialSearchApi, CredentialSearchResult,
-};
 use super::error::Error as ErrorCode;
+use super::search::{CredentialSearch, CredentialSearchApi, CredentialSearchResult};
 use linux_keyutils::{KeyRing, KeyRingIdentifier, KeyType, Permission};
 
 pub struct KeyutilsCredentialSearch {}
@@ -111,21 +109,23 @@ fn get_permission_chars(permission_data: u8) -> String {
 
 #[cfg(test)]
 mod tests {
-    use keyring::{credential::CredentialApi, keyutils::KeyutilsCredential};
-    use crate::{tests::generate_random_string, Limit, List, Search};
-    use std::collections::HashSet;
     use super::{get_key_type, get_permission_chars, KeyRing, KeyRingIdentifier};
+    use crate::{tests::generate_random_string, Limit, List, Search};
+    use keyring::{credential::CredentialApi, keyutils::KeyutilsCredential};
+    use std::collections::HashSet;
 
     #[test]
     fn test_search() {
         let name = generate_random_string();
-        let entry = keyring::keyutils::KeyutilsCredential::new_with_target(None, &name, &name).expect("Failed to create searchable entry");
+        let entry = keyring::keyutils::KeyutilsCredential::new_with_target(None, &name, &name)
+            .expect("Failed to create searchable entry");
         let password = "search test password";
-        entry.set_password(password).expect("Failed to set password");
+        entry
+            .set_password(password)
+            .expect("Failed to set password");
 
-        let actual: &KeyutilsCredential = &entry
-            .get_credential()
-            .expect("Not a keyutils credential 1");
+        let actual: &KeyutilsCredential =
+            &entry.get_credential().expect("Not a keyutils credential 1");
 
         let keyring = KeyRing::from_special_id(KeyRingIdentifier::Session, false)
             .expect("No session keyring");
@@ -156,7 +156,7 @@ mod tests {
         let result = Search {
             inner: Box::new(super::KeyutilsCredentialSearch {}),
         }
-            .by("session", &query);
+        .by("session", &query);
         let list = List::list_credentials(result, Limit::All)
             .expect("Failed to parse string from HashMap result");
 

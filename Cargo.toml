@@ -2,10 +2,10 @@
 authors = ["Nick Wimmers <wimmers.nicholas@gmail.com>"]
 description = "Cross-platform library for searching the platform specific credential store, made possible by keyring-rs"
 homepage = "https://github.com/wiimmers/keyring-search"
-license = "MIT or Apache-2.0"
+license = "MIT OR Apache-2.0"
 name = "keyring-search"
 repository = "https://github.com/wiimmers/keyring-search.git"
-version = "0.1.0"
+version = "0.2.1"
 rust-version = "1.68"
 exclude = [".github/"]
 edition = "2021"

@@ -5,10 +5,8 @@ use security_framework::passwords::{
 };
 use security_framework::{base::Error, item};
 
-use super::search::{
-    CredentialSearch, CredentialSearchApi, CredentialSearchResult,
-};
 use super::error::{Error as ErrorCode, Result};
+use super::search::{CredentialSearch, CredentialSearchApi, CredentialSearchResult};
 
 pub struct IosCredentialSearch {}
 

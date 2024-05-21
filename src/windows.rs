@@ -1,15 +1,12 @@
-
 use regex::Regex;
 use std::collections::HashMap;
 use std::str;
 use windows_sys::Win32::Security::Credentials::{
-    CredEnumerateW, CredFree, CREDENTIALW, CRED_ENUMERATE_ALL_CREDENTIALS
+    CredEnumerateW, CredFree, CREDENTIALW, CRED_ENUMERATE_ALL_CREDENTIALS,
 };
 
-use super::search::{
-    CredentialSearch, CredentialSearchApi, CredentialSearchResult,
-};
 use super::error::{Error as ErrorCode, Result};
+use super::search::{CredentialSearch, CredentialSearchApi, CredentialSearchResult};
 
 /// The representation of a Windows Generic credential.
 ///
@@ -175,14 +172,14 @@ unsafe fn from_wstr(ws: *const u16) -> String {
 
 #[cfg(test)]
 mod tests {
-    use crate::{Search, List, Limit, tests::generate_random_string};
-    use keyring::{self, credential::CredentialApi}; 
+    use crate::{tests::generate_random_string, Limit, List, Search};
+    use keyring::{self, credential::CredentialApi};
 
     use std::collections::HashSet;
 
     fn test_search(by: &str) {
         let name = generate_random_string();
-        let entry = keyring::windows::WinCredential::new_with_target(None,&name, &name)
+        let entry = keyring::windows::WinCredential::new_with_target(None, &name, &name)
             .expect("Error creating searchable entry");
         let password = "search test password";
         entry
@@ -192,9 +189,8 @@ mod tests {
         let list = List::list_credentials(result, Limit::All)
             .expect("Failed to parse string from HashMap result");
 
-        let actual: &keyring::windows::WinCredential = &entry
-            .get_credential()
-            .expect("Not a windows credential");
+        let actual: &keyring::windows::WinCredential =
+            &entry.get_credential().expect("Not a windows credential");
 
         let expected = format!(
             "{}\n\tService:\t{}\n\tUser:\t{}\n",
