@@ -52,3 +52,7 @@ secret-service = { version = "3", optional = true }
 byteorder = { version = "1.2", optional = true }
 regex = { version = "1.10.4", optional = true }
 windows-sys = { version = "0.52", features = ["Win32_Foundation", "Win32_Security_Credentials"], optional = true }
+
+[dev-dependencies]
+keyring = "2.3.3"
+rand = "0.8"

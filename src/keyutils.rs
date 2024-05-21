@@ -1,10 +1,10 @@
 use std::collections::HashMap;
 
-use super::credential::{
+use super::search::{
     CredentialSearch, CredentialSearchApi, CredentialSearchResult,
 };
-use super::error::{Error as ErrorCode, Result};
-use linux_keyutils::{KeyError, KeyRing, KeyRingIdentifier, KeyType, Permission};
+use super::error::Error as ErrorCode;
+use linux_keyutils::{KeyRing, KeyRingIdentifier, KeyType, Permission};
 
 pub struct KeyutilsCredentialSearch {}
 
@@ -107,4 +107,64 @@ fn get_permission_chars(permission_data: u8) -> String {
     }
 
     perm_string
+}
+
+#[cfg(test)]
+mod tests {
+    use keyring::{credential::CredentialApi, keyutils::KeyutilsCredential};
+    use crate::{tests::generate_random_string, Limit, List, Search};
+    use std::collections::HashSet;
+    use super::{get_key_type, get_permission_chars, KeyRing, KeyRingIdentifier};
+
+    #[test]
+    fn test_search() {
+        let name = generate_random_string();
+        let entry = keyring::keyutils::KeyutilsCredential::new_with_target(None, &name, &name).expect("Failed to create searchable entry");
+        let password = "search test password";
+        entry.set_password(password).expect("Failed to set password");
+
+        let actual: &KeyutilsCredential = &entry
+            .get_credential()
+            .expect("Not a keyutils credential 1");
+
+        let keyring = KeyRing::from_special_id(KeyRingIdentifier::Session, false)
+            .expect("No session keyring");
+        let credential = keyring
+            .search(&actual.description)
+            .expect("Failed to downcast to linux-keyutils type");
+        let metadata = credential
+            .metadata()
+            .expect("Failed to get credential metadata");
+
+        let mut expected = format!(
+            "ID: {} Description: {}\n",
+            credential.get_id().0,
+            actual.description
+        );
+        expected.push_str(format!("\tgid:\t{}\n", metadata.get_gid()).as_str());
+        expected.push_str(format!("\tuid:\t{}\n", metadata.get_uid()).as_str());
+        expected.push_str(
+            format!(
+                "\tperm:\t{}\n",
+                get_permission_chars(metadata.get_perms().bits().to_be_bytes()[0])
+            )
+            .as_str(),
+        );
+        expected.push_str(format!("\tktype:\t{}\n", get_key_type(metadata.get_type())).as_str());
+
+        let query = format!("keyring-rs:{}@{}", name, name);
+        let result = Search {
+            inner: Box::new(super::KeyutilsCredentialSearch {}),
+        }
+            .by("session", &query);
+        let list = List::list_credentials(result, Limit::All)
+            .expect("Failed to parse string from HashMap result");
+
+        let expected_set: HashSet<&str> = expected.lines().collect();
+        let result_set: HashSet<&str> = list.lines().collect();
+        assert_eq!(expected_set, result_set, "Search results do not match");
+        entry
+            .delete_password()
+            .expect("Couldn't delete test-search-by-user");
+    }
 }
