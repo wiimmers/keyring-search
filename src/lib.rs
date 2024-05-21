@@ -101,7 +101,7 @@ impl Search {
     ///
     /// Can return a [SearchError](Error::SearchError)
     /// # Example
-    ///     let search = keyring::Search::new().unwrap();
+    ///     let search = keyring_search::Search::new().unwrap();
     ///     let results = search.by("user", "Mr. Foo Bar");
     pub fn by(&self, by: &str, query: &str) -> CredentialSearchResult {
         self.inner.by(by, query)

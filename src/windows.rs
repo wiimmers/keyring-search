@@ -37,7 +37,7 @@ impl CredentialSearchApi for WinCredentialSearch {
     ///
     /// Can return a [SearchError](Error::SearchError)
     /// # Example
-    ///     let search = keyring::Search::new().unwrap();
+    ///     let search = keyring_search::Search::new().unwrap();
     ///     let results = search.by("user", "Mr. Foo Bar");
     fn by(&self, by: &str, query: &str) -> CredentialSearchResult {
         let results = match search_type(by, query) {
@@ -171,4 +171,55 @@ unsafe fn from_wstr(ws: *const u16) -> String {
     }
     let slice = std::slice::from_raw_parts(ws, len);
     String::from_utf16_lossy(slice)
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::{Search, List, Limit, tests::generate_random_string};
+    use keyring::{self, credential::CredentialApi}; 
+
+    use std::collections::HashSet;
+
+    fn test_search(by: &str) {
+        let name = generate_random_string();
+        let entry = keyring::windows::WinCredential::new_with_target(None,&name, &name)
+            .expect("Error creating searchable entry");
+        let password = "search test password";
+        entry
+            .set_password(password)
+            .expect("Error setting password");
+        let result = Search::new().expect("Failed to build search").by(by, &name);
+        let list = List::list_credentials(result, Limit::All)
+            .expect("Failed to parse string from HashMap result");
+
+        let actual: &keyring::windows::WinCredential = &entry
+            .get_credential()
+            .expect("Not a windows credential");
+
+        let expected = format!(
+            "{}\n\tService:\t{}\n\tUser:\t{}\n",
+            actual.target_name, actual.comment, actual.username
+        );
+        let expected_set: HashSet<&str> = expected.lines().collect();
+        let result_set: HashSet<&str> = list.lines().collect();
+        assert_eq!(expected_set, result_set, "Search results do not match");
+        entry
+            .delete_password()
+            .expect("Couldn't delete test-search-by-target");
+    }
+
+    #[test]
+    fn test_search_by_user() {
+        test_search("user")
+    }
+
+    #[test]
+    fn test_search_by_service() {
+        test_search("service")
+    }
+
+    #[test]
+    fn test_search_by_target() {
+        test_search("target")
+    }
 }
