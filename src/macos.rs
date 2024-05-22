@@ -109,3 +109,78 @@ fn to_credential_search_result(
 
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::item;
+    use crate::{tests::generate_random_string, Limit, List, Search};
+    use keyring::{credential::CredentialApi, macos::MacCredential};
+    use std::collections::HashSet;
+
+    fn test_search(by: &str) {
+        let name = generate_random_string();
+        let entry = MacCredential::new_with_target(None, &name, &name)
+            .expect("Error creating searchable mac credential");
+        entry
+            .set_password("test-search-password")
+            .expect("Failed to set password for test-search");
+        let result = Search::new()
+            .expect("Failed to create new search")
+            .by(by, &name);
+        let list = List::list_credentials(result, Limit::All)
+            .expect("Failed to parse HashMap search result");
+        let actual: &MacCredential = &entry.get_credential().expect("Not a mac credential");
+
+        let mut new_search = item::ItemSearchOptions::new();
+
+        let search_default = &mut new_search
+            .class(item::ItemClass::generic_password())
+            .limit(item::Limit::All)
+            .load_attributes(true);
+
+        let vector_of_results = match by.to_ascii_lowercase().as_str() {
+            "account" => search_default.account(actual.account.as_str()).search(),
+            "service" => search_default.service(actual.account.as_str()).search(),
+            "label" => search_default.label(actual.account.as_str()).search(),
+            _ => panic!(),
+        }
+        .expect("Failed to get vector of search results in system-framework");
+
+        let mut expected = String::new();
+
+        for item in vector_of_results {
+            let mut item = item
+                .simplify_dict()
+                .expect("Unable to simplify to dictionary");
+            let label = format!("{}\n", &item.remove("labl").expect("No label found"));
+            let service = format!("\tService:\t{}\n", actual.service);
+            let account = format!("\tAccount:\t{}\n", actual.account);
+            expected.push_str(&label);
+            expected.push_str(&service);
+            expected.push_str(&account);
+        }
+
+        let expected_set: HashSet<&str> = expected.lines().collect();
+        let result_set: HashSet<&str> = list.lines().collect();
+        assert_eq!(expected_set, result_set, "Search results do not match");
+
+        entry
+            .delete_password()
+            .expect("Failed to delete mac credential");
+    }
+
+    #[test]
+    fn test_search_by_service() {
+        test_search("service")
+    }
+
+    #[test]
+    fn test_search_by_label() {
+        test_search("label")
+    }
+
+    #[test]
+    fn test_search_by_account() {
+        test_search("account")
+    }
+}

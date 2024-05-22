@@ -15,8 +15,8 @@ To use this library in your project add the following to your `Cargo.toml` file:
 keyring-search = "0.2.0"
 ```
 
-This is a cross-platform library for searching the platform specific keystore. 
-[this library's entry on crates.io](https://crates.io/crates/keyring-search).
+This is a cross-platform library for searching the platform specific keystore.
+
 Currently supported platforms are
 Linux,
 Windows,
@@ -32,15 +32,15 @@ the platform specific keystores based on user provided search parameters.
 Windows machines have the option to search by 'user', 'service', or 'target'.
 ```rust
 use keyring_search::{Search, Limit, List};
-fn main() {
-    let result = Search::new()
-        .expect("ERROR")
-        .by("user", "test-user");
-    let list = List::list_credentials(result, Limit::All)
-        .expect("Error");
 
-    println!("{}", list);
-}
+let result = Search::new()
+    .expect("ERROR")
+    .by("user", "test-user");
+let list = List::list_credentials(result, Limit::All)
+    .expect("Error");
+
+println!("{}", list);
+
 ```
 
 ### Linux - Secret Service
@@ -49,15 +49,15 @@ and thus is more liberal with the keys that can be searched. The by method will 
 any parameter passed and attempt to search for the user defined key. 
 ```rust
 use keyring_search::{Search, Limit, List};
-fn main() {
-    let result = Search::new()
-        .expect("ERROR")
-        .by("user", "test-user");
-    let list = List::list_credentials(result, Limit::All)
-        .expect("Error");
 
-    println!("{}", list);
-}
+let result = Search::new()
+    .expect("ERROR")
+    .by("user", "test-user");
+let list = List::list_credentials(result, Limit::All)
+    .expect("Error");
+
+println!("{}", list);
+
 ```
 
 ### Linux - Keyutils 
@@ -68,30 +68,30 @@ and encompasses the different types of keyrings available: "thread", "process", 
 rather specific while limiting the different types of data to search, i.e. user, account, service. 
 ```rust
 use keyring_search::{Search, Limit, List};
-fn main() {
-    let result = Search::new()
-        .expect("ERROR")
-        .by("session", "test-user@test-service");
-    let list = List::list_credentials(result, Limit::All)
-        .expect("Error");
 
-    println!("{}", list);
-}
+let result = Search::new()
+    .expect("ERROR")
+    .by("session", "test-user@test-service");
+let list = List::list_credentials(result, Limit::All)
+    .expect("Error");
+
+println!("{}", list);
+
 ```
 
 ### MacOS 
 MacOS machines have the option to search by 'account', 'service', or 'label.
 ```rust
 use keyring_search::{Search, Limit, List};
-fn main() {
-    let result = Search::new()
-        .expect("ERROR")
-        .by("account", "test-user");
-    let list = List::list_credentials(result, Limit::All)
-        .expect("Error");
 
-    println!("{}", list);
-}
+let result = Search::new()
+    .expect("ERROR")
+    .by("account", "test-user");
+let list = List::list_credentials(result, Limit::All)
+    .expect("Error");
+
+println!("{}", list);
+
 ```
 
 ## Errors

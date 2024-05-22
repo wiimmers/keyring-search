@@ -17,35 +17,11 @@ the platform specific keystores based on user provided search parameters.
 
 ### Windows
 Windows machines have the option to search by 'user', 'service', or 'target'.
-```
-use keyring_search::{Search, Limit, List};
-fn main() {
-    let result = Search::new()
-        .expect("ERROR")
-        .by("user", "test-user");
-    let list = List::list_credentials(result, Limit::All)
-        .expect("Error");
-
-    println!("{}", list);
-}
-```
 
 ### Linux - Secret Service
 If using the Linux Secret Service platform, the keystore is stored as a HashMap,
 and thus is more liberal with the keys that can be searched. The by method will take
 any parameter passed and attempt to search for the user defined key.
-```
-use keyring_search::{Search, Limit, List};
-fn main() {
-    let result = Search::new()
-        .expect("ERROR")
-        .by("user", "test-user");
-    let list = List::list_credentials(result, Limit::All)
-        .expect("Error");
-
-    println!("{}", list);
-}
-```
 
 ### Linux - Keyutils
 If using the Linux Keyutils platform, the keystore is non persistent and is used more
@@ -53,33 +29,9 @@ as a secure cache. However, this can still be searched. The breadth of the by me
 and encompasses the different types of keyrings available: "thread", "process", "session,
 "user", "user session", and "group". Because of this searching mechanism, the search has to be
 rather specific while limiting the different types of data to search, i.e. user, account, service.
-```
-use keyring_search::{Search, Limit, List};
-fn main() {
-    let result = Search::new()
-        .expect("ERROR")
-        .by("session", "test-user@test-service");
-    let list = List::list_credentials(result, Limit::All)
-        .expect("Error");
-
-    println!("{}", list);
-}
-```
 
 ### MacOS
 MacOS machines have the option to search by 'account', 'service', or 'label.
-```
-use keyring_search::{Search, Limit, List};
-fn main() {
-    let result = Search::new()
-        .expect("ERROR")
-        .by("account", "test-user");
-    let list = List::list_credentials(result, Limit::All)
-        .expect("Error");
-
-    println!("{}", list);
-}
-```
  */
 
 pub use error::{Error, Result};
