@@ -58,7 +58,7 @@ fn search_items(by: &str, query: &str) -> CredentialSearchResult {
                 //
                 // This is negligible in practice and just specifies to type of credential
                 // for the keys and passwords application on gnome linux devices.
-                if key != "xdg:schema".to_string() {
+                if key != *"xdg:schema".to_string() {
                     inner_map.insert(key, value);
                 }
 
