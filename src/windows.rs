@@ -1,22 +1,81 @@
 use regex::Regex;
 use std::collections::HashMap;
-use std::str;
+use windows_sys::Win32::Foundation::{FILETIME, SYSTEMTIME};
 use windows_sys::Win32::Security::Credentials::{
-    CredEnumerateW, CredFree, CREDENTIALW, CRED_ENUMERATE_ALL_CREDENTIALS,
+    CredEnumerateW, CredFree, CREDENTIALW, CRED_ENUMERATE_ALL_CREDENTIALS, CRED_PERSIST, CRED_TYPE,
 };
+use windows_sys::Win32::Storage::FileSystem::FileTimeToLocalFileTime;
+use windows_sys::Win32::System::Time::{LocalFileTimeToLocalSystemTime, TIME_ZONE_INFORMATION};
 
 use super::error::{Error as ErrorCode, Result};
 use super::search::{CredentialSearch, CredentialSearchApi, CredentialSearchResult};
 
+static DAYS: [&str; 7] = [
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+    "Sunday",
+];
+static MONTHS: [&str; 12] = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+];
+
+// Needs refactoring to use built in Windows SYS enums and types for matching better error handling
+
+// Flag types
+
 /// The representation of a Windows Generic credential.
 ///
 /// See the module header for the meanings of these fields.
-#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct WinCredential {
     pub username: String,
     pub target_name: String,
     pub target_alias: String,
     pub comment: String,
+    pub cred_type: CRED_TYPE,
+    pub last_written: HumanTime,
+    pub persist: CRED_PERSIST,
+}
+
+pub struct HumanTime {
+    pub day_of_week: String,
+    pub day: u16,
+    pub hour: u16,
+    pub minute: u16,
+    pub second: u16,
+    pub month: String,
+    pub year: u16,
+}
+
+impl std::fmt::Display for HumanTime {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(
+            f,
+            "{}, {} {}, {} at {:02}:{:02}:{:02}",
+            self.day_of_week, self.day, self.month, self.year, self.hour, self.minute, self.second
+        )
+    }
+}
+
+// Type matching for search types
+enum WinSearchType {
+    Target,
+    Service,
+    User,
 }
 
 pub struct WinCredentialSearch {}
@@ -33,6 +92,7 @@ impl CredentialSearchApi for WinCredentialSearch {
     /// Specifies what parameter to search by and the query string
     ///
     /// Can return a [SearchError](Error::SearchError)
+    /// or [SearchError](Error::Unexpected)
     /// # Example
     ///     let search = keyring_search::Search::new().unwrap();
     ///     let results = search.by("user", "Mr. Foo Bar");
@@ -46,21 +106,17 @@ impl CredentialSearchApi for WinCredentialSearch {
         for result in results {
             let mut inner_map: HashMap<String, String> = HashMap::new();
 
-            inner_map.insert("Service".to_string(), result.comment);
-            inner_map.insert("User".to_string(), result.username);
+            inner_map.insert("Service".to_string(), result.comment.clone());
+            inner_map.insert("User".to_string(), result.username.clone());
+            inner_map.insert("Type".to_string(), match_cred_type(&result)?);
+            inner_map.insert("Last Written".to_string(), result.last_written.to_string());
+            inner_map.insert("Persist".to_string(), match_persist_type(&result)?);
 
             outer_map.insert(result.target_name.to_string(), inner_map);
         }
 
         Ok(outer_map)
     }
-}
-
-// Type matching for search types
-enum WinSearchType {
-    Target,
-    Service,
-    User,
 }
 
 // Match search type
@@ -108,7 +164,7 @@ fn search(search_type: &WinSearchType, search_parameter: &str) -> Result<Vec<Win
 /// In Windows the target name is prepended with the credential type by default
 /// i.e. LegacyGeneric:target=Example Target Name.
 /// The type is stripped for string matching.
-/// There is no guarantee that the enrties wil be in the same order as in
+/// There is no guarantee that the entries wil be in the same order as in
 /// Windows Credential Manager.
 fn get_all_credentials() -> Vec<WinCredential> {
     let mut entries: Vec<WinCredential> = Vec::new();
@@ -142,18 +198,70 @@ fn get_all_credentials() -> Vec<WinCredential> {
         };
         let target_alias = unsafe { from_wstr(credential.TargetAlias) };
         let comment = unsafe { from_wstr(credential.Comment) };
+        let cred_type = credential.Type;
+        let last_written = credential.LastWritten;
+        let persist = credential.Persist;
+        let human_time: HumanTime;
+
+        unsafe {
+            let mut local_filetime: FILETIME = std::mem::zeroed();
+            let mut system_time: SYSTEMTIME = std::mem::zeroed();
+            let local: TIME_ZONE_INFORMATION = std::mem::zeroed();
+            FileTimeToLocalFileTime(&last_written, &mut local_filetime as *mut FILETIME);
+            LocalFileTimeToLocalSystemTime(
+                &local,
+                &local_filetime,
+                &mut system_time as *mut SYSTEMTIME,
+            );
+            human_time = HumanTime {
+                hour: system_time.wHour,
+                minute: system_time.wMinute,
+                second: system_time.wSecond,
+                day_of_week: DAYS[system_time.wDayOfWeek as usize].to_string(),
+                day: system_time.wDay,
+                month: MONTHS[system_time.wMonth as usize - 1].to_string(),
+                year: system_time.wYear,
+            };
+        }
 
         entries.push(WinCredential {
             username,
             target_name,
             target_alias,
             comment,
+            cred_type,
+            last_written: human_time,
+            persist,
         });
     }
 
     unsafe { CredFree(std::mem::transmute(credentials_ptr)) };
 
     entries
+}
+
+fn match_cred_type(credential: &WinCredential) -> Result<String> {
+    match credential.cred_type {
+        1 => Ok("Generic".to_string()),
+        2 => Ok("Domain Password".to_string()),
+        3 => Ok("Domain Certificate".to_string()),
+        4 => Ok("Domain Visible Password".to_string()),
+        5 => Ok("Generic Certificate".to_string()),
+        6 => Ok("Domain Extended".to_string()),
+        7 => Ok("Maximum".to_string()),
+        1007 => Ok("Maximum Ex".to_string()),
+        _ => Err(ErrorCode::Unexpected("cred_type".to_string())),
+    }
+}
+
+fn match_persist_type(credential: &WinCredential) -> Result<String> {
+    match credential.persist {
+        0 => Ok("None".to_string()),
+        1 => Ok("Session".to_string()),
+        2 => Ok("Local Machine".to_string()),
+        3 => Ok("Enterprise".to_string()),
+        _ => Err(ErrorCode::Unexpected("persist_type".to_string())),
+    }
 }
 
 unsafe fn from_wstr(ws: *const u16) -> String {

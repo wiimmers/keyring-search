@@ -2,6 +2,8 @@
 #[non_exhaustive]
 pub enum Error {
     SearchError(String),
+    Unexpected, 
+    FormatError,
 }
 
 pub type Result<T> = std::result::Result<T, Error>;

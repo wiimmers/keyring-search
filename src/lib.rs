@@ -167,7 +167,7 @@ impl List {
                 for (outer_key, inner_map) in search_result {
                     output.push_str(&format!("{}\n", outer_key));
                     for (key, value) in inner_map {
-                        output.push_str(&format!("\t{}:\t{}\n", key, value));
+                        output.push_str(&format!("\t{}: {}\n", key, value));
                     }
                 }
                 Ok(output)
@@ -189,7 +189,7 @@ impl List {
                 for (outer_key, inner_map) in search_result {
                     output.push_str(&format!("{}\n", outer_key));
                     for (key, value) in inner_map {
-                        output.push_str(&format!("\t{}:\t{}\n", key, value));
+                        output.push_str(&format!("\t{}: {}\n", key, value));
                     }
                     count += 1;
                     if count > max {
