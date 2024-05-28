@@ -167,12 +167,12 @@ impl List {
                 for (outer_key, inner_map) in search_result {
                     output.push_str(&format!("{}\n", outer_key));
                     for (key, value) in inner_map {
-                        output.push_str(&format!("\t{}: {}\n", key, value));
+                        output.push_str(&format!("{}: {}\n", key, value));
                     }
                 }
                 Ok(output)
             }
-            Err(err) => Err(Error::SearchError(err.to_string())),
+            Err(err) => Err(err),
         }
     }
     /// List a certain amount of credential search results.
@@ -187,9 +187,9 @@ impl List {
         match result {
             Ok(search_result) => {
                 for (outer_key, inner_map) in search_result {
-                    output.push_str(&format!("{}\n", outer_key));
+                    output.push_str(&format!("Target: {}\n", outer_key));
                     for (key, value) in inner_map {
-                        output.push_str(&format!("\t{}: {}\n", key, value));
+                        output.push_str(&format!("{}: {}\n", key, value));
                     }
                     count += 1;
                     if count > max {
@@ -198,7 +198,7 @@ impl List {
                 }
                 Ok(output)
             }
-            Err(err) => Err(Error::SearchError(err.to_string())),
+            Err(err) => Err(err),
         }
     }
 }

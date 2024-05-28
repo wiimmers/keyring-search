@@ -58,13 +58,13 @@ fn search(by: &str, query: &str) -> CredentialSearchResult {
 
     let results = match search {
         Ok(items) => items,
-        Err(err) => return Err(ErrorCode::SearchError(err.to_string())),
+        Err(_) => return Err(ErrorCode::NoResults),
     };
 
     for item in results {
         match to_credential_search_result(item.simplify_dict(), &mut outer_map) {
             Ok(_) => {}
-            Err(err) => return Err(ErrorCode::SearchError(err.to_string())),
+            Err(err) => return Err(err),
         }
     }
 
@@ -80,32 +80,14 @@ fn to_credential_search_result(
 ) -> Result<()> {
     let mut result = match item {
         None => {
-            return Err(ErrorCode::SearchError(
-                "Search returned no items".to_string(),
-            ))
+            return Err(ErrorCode::NoResults)
         }
         Some(map) => map,
     };
 
-    let mut formatted: HashMap<String, String> = HashMap::new();
-
-    if result.get_key_value("svce").is_some() {
-        formatted.insert(
-            "Service".to_string(),
-            result.get_key_value("svce").unwrap().1.to_string(),
-        );
-    }
-
-    if result.get_key_value("acct").is_some() {
-        formatted.insert(
-            "Account".to_string(),
-            result.get_key_value("acct").unwrap().1.to_string(),
-        );
-    }
-
     let label = result.remove("labl").unwrap_or("EMPTY LABEL".to_string());
 
-    outer_map.insert(label.to_string(), formatted);
+    outer_map.insert(label.to_string(), result);
 
     Ok(())
 }
