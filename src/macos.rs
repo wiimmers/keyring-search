@@ -79,9 +79,7 @@ fn to_credential_search_result(
     outer_map: &mut HashMap<String, HashMap<String, String>>,
 ) -> Result<()> {
     let mut result = match item {
-        None => {
-            return Err(ErrorCode::NoResults)
-        }
+        None => return Err(ErrorCode::NoResults),
         Some(map) => map,
     };
 

@@ -3,7 +3,7 @@
 pub enum Error {
     SearchError(String),
     Unexpected(String),
-    NoResults
+    NoResults,
 }
 
 pub type Result<T> = std::result::Result<T, Error>;

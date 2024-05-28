@@ -34,10 +34,6 @@ static MONTHS: [&str; 12] = [
     "December",
 ];
 
-// Needs refactoring to use built in Windows SYS enums and types for matching better error handling
-
-// Flag types
-
 /// The representation of a Windows Generic credential.
 ///
 /// See the module header for the meanings of these fields.
@@ -92,25 +88,33 @@ impl CredentialSearchApi for WinCredentialSearch {
     /// Specifies what parameter to search by and the query string
     ///
     /// Can return a [SearchError](Error::SearchError)
-    /// or [SearchError](Error::Unexpected)
+    /// or [Unexpected](Error::Unexpected),
+    /// Will return a [NoResults](Error::NoResults)
+    /// if the search returns an empty String.
     /// # Example
     ///     let search = keyring_search::Search::new().unwrap();
     ///     let results = search.by("user", "Mr. Foo Bar");
     fn by(&self, by: &str, query: &str) -> CredentialSearchResult {
         let results = match search_type(by, query) {
             Ok(results) => results,
-            Err(err) => return Err(ErrorCode::SearchError(err.to_string())),
+            Err(err) => return Err(err),
         };
 
         let mut outer_map: HashMap<String, HashMap<String, String>> = HashMap::new();
         for result in results {
             let mut inner_map: HashMap<String, String> = HashMap::new();
 
-            inner_map.insert("Service".to_string(), result.comment.clone());
+            inner_map.insert("Comment".to_string(), result.comment.clone());
             inner_map.insert("User".to_string(), result.username.clone());
-            inner_map.insert("Type".to_string(), match_cred_type(&result)?);
+            inner_map.insert(
+                "Type".to_string(),
+                match_cred_type(result.cred_type.clone())?,
+            );
             inner_map.insert("Last Written".to_string(), result.last_written.to_string());
-            inner_map.insert("Persist".to_string(), match_persist_type(&result)?);
+            inner_map.insert(
+                "Persist".to_string(),
+                match_persist_type(result.persist.clone())?,
+            );
 
             outer_map.insert(result.target_name.to_string(), inner_map);
         }
@@ -155,8 +159,11 @@ fn search(search_type: &WinSearchType, search_parameter: &str) -> Result<Vec<Win
             results.push(credential);
         }
     }
-
-    Ok(results)
+    if results.is_empty() {
+        Err(ErrorCode::NoResults)
+    } else {
+        Ok(results)
+    }
 }
 
 /// Returns a vector of credentials corresponding to entries in Windows Credential Manager.
@@ -199,30 +206,8 @@ fn get_all_credentials() -> Vec<WinCredential> {
         let target_alias = unsafe { from_wstr(credential.TargetAlias) };
         let comment = unsafe { from_wstr(credential.Comment) };
         let cred_type = credential.Type;
-        let last_written = credential.LastWritten;
+        let last_written = unsafe { get_last_written(credential.LastWritten) };
         let persist = credential.Persist;
-        let human_time: HumanTime;
-
-        unsafe {
-            let mut local_filetime: FILETIME = std::mem::zeroed();
-            let mut system_time: SYSTEMTIME = std::mem::zeroed();
-            let local: TIME_ZONE_INFORMATION = std::mem::zeroed();
-            FileTimeToLocalFileTime(&last_written, &mut local_filetime as *mut FILETIME);
-            LocalFileTimeToLocalSystemTime(
-                &local,
-                &local_filetime,
-                &mut system_time as *mut SYSTEMTIME,
-            );
-            human_time = HumanTime {
-                hour: system_time.wHour,
-                minute: system_time.wMinute,
-                second: system_time.wSecond,
-                day_of_week: DAYS[system_time.wDayOfWeek as usize].to_string(),
-                day: system_time.wDay,
-                month: MONTHS[system_time.wMonth as usize - 1].to_string(),
-                year: system_time.wYear,
-            };
-        }
 
         entries.push(WinCredential {
             username,
@@ -230,7 +215,7 @@ fn get_all_credentials() -> Vec<WinCredential> {
             target_alias,
             comment,
             cred_type,
-            last_written: human_time,
+            last_written,
             persist,
         });
     }
@@ -240,8 +225,25 @@ fn get_all_credentials() -> Vec<WinCredential> {
     entries
 }
 
-fn match_cred_type(credential: &WinCredential) -> Result<String> {
-    match credential.cred_type {
+unsafe fn get_last_written(last_written: FILETIME) -> HumanTime {
+    let mut local_filetime: FILETIME = std::mem::zeroed();
+    let mut system_time: SYSTEMTIME = std::mem::zeroed();
+    let local: TIME_ZONE_INFORMATION = std::mem::zeroed();
+    FileTimeToLocalFileTime(&last_written, &mut local_filetime as *mut FILETIME);
+    LocalFileTimeToLocalSystemTime(&local, &local_filetime, &mut system_time as *mut SYSTEMTIME);
+    HumanTime {
+        hour: system_time.wHour,
+        minute: system_time.wMinute,
+        second: system_time.wSecond,
+        day_of_week: DAYS[system_time.wDayOfWeek as usize - 1].to_string(),
+        day: system_time.wDay,
+        month: MONTHS[system_time.wMonth as usize - 1].to_string(),
+        year: system_time.wYear,
+    }
+}
+
+fn match_cred_type(credential: u32) -> Result<String> {
+    match credential {
         1 => Ok("Generic".to_string()),
         2 => Ok("Domain Password".to_string()),
         3 => Ok("Domain Certificate".to_string()),
@@ -254,8 +256,8 @@ fn match_cred_type(credential: &WinCredential) -> Result<String> {
     }
 }
 
-fn match_persist_type(credential: &WinCredential) -> Result<String> {
-    match credential.persist {
+fn match_persist_type(credential: u32) -> Result<String> {
+    match credential {
         0 => Ok("None".to_string()),
         1 => Ok("Session".to_string()),
         2 => Ok("Local Machine".to_string()),
@@ -280,36 +282,96 @@ unsafe fn from_wstr(ws: *const u16) -> String {
 
 #[cfg(test)]
 mod tests {
-    use crate::{tests::generate_random_string, Limit, List, Search};
-    use keyring::{self, credential::CredentialApi};
-
     use std::collections::HashSet;
+    use std::iter::once;
+
+    use byteorder::{ByteOrder, LittleEndian};
+    use windows_sys::Win32::Foundation::FILETIME;
+    use windows_sys::Win32::Security::Credentials::{CredDeleteW, CredFree, CredReadW, CredWriteW, CREDENTIALW, CREDENTIAL_ATTRIBUTEW, CRED_FLAGS, CRED_PERSIST_ENTERPRISE, CRED_TYPE_GENERIC};
+
+    use crate::{Error, Limit, List};
+    use crate::{tests::generate_random_string, Search};
+
+    use super::{get_last_written, match_cred_type, match_persist_type};
+
+    fn to_wstr(s: &str) -> Vec<u16> {
+        s.encode_utf16().chain(once(0)).collect()
+
+    }
+
+    fn delete_credential(name: &str) {
+        unsafe { CredDeleteW(to_wstr(&name).as_ptr(), CRED_TYPE_GENERIC, CRED_TYPE_GENERIC) };
+    }
+
+    fn create_credential(name: &str, user: Option<&str>) {
+        let mut user = if user == None {
+            to_wstr(&name)
+        } else {
+            to_wstr(user.unwrap())
+        };
+        let mut target_name = to_wstr(&name);
+        let mut target_alias = to_wstr(&name);
+        let mut comment = to_wstr(&name);
+        let last_written = FILETIME {
+            dwLowDateTime: 0,
+            dwHighDateTime: 0,
+        };
+        let blob_u16 = to_wstr("password");
+        let mut blob = vec![0; blob_u16.len() * 2];
+        LittleEndian::write_u16_into(&blob_u16, &mut blob);
+        let blob_len = blob.len() as u32;
+        let attributes: *mut CREDENTIAL_ATTRIBUTEW = std::ptr::null_mut();
+
+        let mut credential = CREDENTIALW {
+            Flags: CRED_FLAGS::default(),
+            Type: CRED_TYPE_GENERIC,
+            TargetName: target_name.as_mut_ptr(),
+            Comment: comment.as_mut_ptr(),
+            LastWritten: last_written,
+            CredentialBlobSize: blob_len,
+            CredentialBlob: blob.as_mut_ptr(),
+            Persist: CRED_PERSIST_ENTERPRISE,
+            AttributeCount: 0,
+            Attributes: attributes,
+            TargetAlias: target_alias.as_mut_ptr(),
+            UserName: user.as_mut_ptr(),
+        };
+
+        let p_credential: *const CREDENTIALW = &mut credential; 
+
+        unsafe { CredWriteW(p_credential, 0) };
+    }
 
     fn test_search(by: &str) {
         let name = generate_random_string();
-        let entry = keyring::windows::WinCredential::new_with_target(None, &name, &name)
-            .expect("Error creating searchable entry");
-        let password = "search test password";
-        entry
-            .set_password(password)
-            .expect("Error setting password");
-        let result = Search::new().expect("Failed to build search").by(by, &name);
-        let list = List::list_credentials(result, Limit::All)
-            .expect("Failed to parse string from HashMap result");
+        create_credential(&name, None); 
+        let mut r_credential: *mut CREDENTIALW = std::ptr::null_mut();
 
-        let actual: &keyring::windows::WinCredential =
-            &entry.get_credential().expect("Not a windows credential");
+        let last_written_filetime = unsafe {
+            CredReadW(to_wstr(&name).as_ptr(), CRED_TYPE_GENERIC, CRED_FLAGS::default(), &mut r_credential);
+            let read_credential = *r_credential;
+            CredFree(r_credential as *mut _);
+            read_credential.LastWritten
+        };
 
         let expected = format!(
-            "{}\n\tService:\t{}\n\tUser:\t{}\n",
-            actual.target_name, actual.comment, actual.username
+            "{}\nLast Written: {}\nType: {}\nPersist: {}\nUser: {}\nComment: {}\n",
+            name, 
+            unsafe { get_last_written(last_written_filetime) },  
+            match_cred_type(CRED_TYPE_GENERIC).expect("Failed to match expected cred type"),
+            match_persist_type(CRED_PERSIST_ENTERPRISE).expect("Failed to match expected persist type"),
+            name,
+            name,
         );
-        let expected_set: HashSet<&str> = expected.lines().collect();
+        
+        let search_result = Search::new().expect("Error creating test search").by(by, &name.clone());
+        let list = List::list_credentials(search_result, Limit::All).expect("Failed to parse search result to string");
+
         let result_set: HashSet<&str> = list.lines().collect();
-        assert_eq!(expected_set, result_set, "Search results do not match");
-        entry
-            .delete_password()
-            .expect("Couldn't delete test-search-by-target");
+        let actual_set: HashSet<&str> = expected.lines().collect();
+
+        assert_eq!(result_set, actual_set);
+        delete_credential(&name);
     }
 
     #[test]
@@ -325,5 +387,66 @@ mod tests {
     #[test]
     fn test_search_by_target() {
         test_search("target")
+    }
+
+    #[test]
+    fn test_max_result() {
+        let name1 = generate_random_string();
+        let name2 = generate_random_string(); 
+        let name3 = generate_random_string();
+        let name4 = generate_random_string();
+
+        create_credential(&name1, Some("test-user"));
+        create_credential(&name2, Some("test-user"));
+        create_credential(&name3, Some("test-user"));
+        create_credential(&name4, Some("test-user"));
+
+        let search = Search::new().expect("Error creating test-max-result search").by("user", "test-user");
+        let list = List::list_credentials(search, Limit::Max(1)).expect("Failed to parse results to string");
+
+        let lines = list.lines().count();
+
+        // Because the list is one large string concatenating 
+        // credentials together, to test the return to only be 
+        // one credential, we count the amount of lines returned.
+        // To adjust this test: add extra random names, create
+        // more credentials with test-user, adjust the limit and 
+        // make the assert number a multiple of 6.
+        assert_eq!(6, lines);
+
+        delete_credential(&name1);
+        delete_credential(&name2);
+        delete_credential(&name3);
+        delete_credential(&name4);
+    }
+
+    #[test]
+    fn no_results() {
+        let name = generate_random_string();
+
+        let result = Search::new()
+            .expect("Failed to build new search")
+            .by("user", &name);
+
+        assert!(
+            matches!(result.unwrap_err(), Error::NoResults),
+            "Returned an empty value"
+        );
+    }
+
+    #[test]
+    fn invalid_search_by() {
+        let name = generate_random_string();
+
+        let result = Search::new()
+            .expect("Failed to build new search")
+            .by(&name, &name);
+
+        let _err = "Invalid search parameter, not Target, Service, or User".to_string();
+
+        assert!(
+            matches!(&result.unwrap_err(), Error::SearchError(_err)),
+            "Search result returned with invalid parameter"
+        );
     }
 }
