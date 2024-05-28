@@ -3,6 +3,7 @@
 pub enum Error {
     SearchError(String),
     Unexpected(String),
+    NoResults
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
@@ -15,6 +16,9 @@ impl std::fmt::Display for Error {
             }
             Error::Unexpected(reason) => {
                 write!(f, "Unexpected result from: {}", reason)
+            }
+            Error::NoResults => {
+                write!(f, "Search returned no results")
             }
         }
     }
