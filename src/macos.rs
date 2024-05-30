@@ -1,6 +1,5 @@
-use std::collections::HashMap;
-
 use security_framework::item;
+use std::collections::HashMap;
 
 use super::error::{Error as ErrorCode, Result};
 use super::search::{CredentialSearch, CredentialSearchApi, CredentialSearchResult};
@@ -92,61 +91,142 @@ fn to_credential_search_result(
 
 #[cfg(test)]
 mod tests {
-    use super::item;
-    use crate::{tests::generate_random_string, Limit, List, Search};
-    use keyring::{credential::CredentialApi, macos::MacCredential};
     use std::collections::HashSet;
+
+    use crate::{tests::generate_random_string, Error, Limit, List, Search};
+    use core_foundation::{
+        base::{CFGetTypeID, CFTypeRef, TCFType, TCFTypeRef},
+        date::{CFDate, CFDateRef},
+        dictionary::{CFDictionary, CFDictionaryRef, CFMutableDictionary},
+        number::{kCFBooleanTrue, CFNumber, CFNumberRef},
+        propertylist::CFPropertyListSubClass,
+        string::{CFString, CFStringRef},
+    };
+    use security_framework::os::macos::keychain::{SecKeychain, SecPreferencesDomain};
+    use security_framework_sys::{
+        base::errSecSuccess,
+        item::{kSecReturnAttributes, kSecValueRef},
+    };
+
+    fn get_keychain() -> SecKeychain {
+        SecKeychain::default_for_domain(SecPreferencesDomain::User)
+            .expect("Failed to get default keychain for User domain")
+    }
+
+    fn create_credential(name: &str, user: Option<&str>) {
+        let keychain = get_keychain();
+        let password = "test-password".as_bytes();
+        keychain
+            .set_generic_password(name, user.unwrap_or(name), password)
+            .expect("Error creating test credential");
+    }
+
+    fn delete_credential(name: &str, user: Option<&str>) {
+        let keychain = get_keychain();
+        let (_password, item) = keychain
+            .find_generic_password(name, user.unwrap_or(name))
+            .expect("Error getting test credential");
+        item.delete();
+    }
 
     fn test_search(by: &str) {
         let name = generate_random_string();
-        let entry = MacCredential::new_with_target(None, &name, &name)
-            .expect("Error creating searchable mac credential");
-        entry
-            .set_password("test-search-password")
-            .expect("Failed to set password for test-search");
-        let result = Search::new()
-            .expect("Failed to create new search")
+        create_credential(&name, None);
+
+        let search_result = Search::new()
+            .expect("Error creating mac search test")
             .by(by, &name);
-        let list = List::list_credentials(result, Limit::All)
-            .expect("Failed to parse HashMap search result");
-        let actual: &MacCredential = &entry.get_credential().expect("Not a mac credential");
+        let list_result = List::list_credentials(search_result, Limit::All)
+            .expect("Failed to parse search result to string");
 
-        let mut new_search = item::ItemSearchOptions::new();
-
-        let search_default = &mut new_search
-            .class(item::ItemClass::generic_password())
-            .limit(item::Limit::All)
-            .load_attributes(true);
-
-        let vector_of_results = match by.to_ascii_lowercase().as_str() {
-            "account" => search_default.account(actual.account.as_str()).search(),
-            "service" => search_default.service(actual.account.as_str()).search(),
-            "label" => search_default.label(actual.account.as_str()).search(),
-            _ => panic!(),
-        }
-        .expect("Failed to get vector of search results in system-framework");
-
+        let keychain = get_keychain();
         let mut expected = String::new();
+        let item = &keychain
+            .find_generic_password(&name, &name)
+            .expect("Error finding test credential")
+            .1;
 
-        for item in vector_of_results {
-            let mut item = item
-                .simplify_dict()
-                .expect("Unable to simplify to dictionary");
-            let label = format!("{}\n", &item.remove("labl").expect("No label found"));
-            let service = format!("\tService:\t{}\n", actual.service);
-            let account = format!("\tAccount:\t{}\n", actual.account);
-            expected.push_str(&label);
-            expected.push_str(&service);
-            expected.push_str(&account);
+        let mut query: CFMutableDictionary<CFString, CFTypeRef> = CFMutableDictionary::new();
+        unsafe {
+            query.add(
+                &CFString::wrap_under_get_rule(kSecValueRef),
+                &item.as_CFTypeRef(),
+            );
+            query.add(
+                &CFString::wrap_under_get_rule(kSecReturnAttributes),
+                &kCFBooleanTrue.as_void_ptr(),
+            );
         }
 
-        let expected_set: HashSet<&str> = expected.lines().collect();
-        let result_set: HashSet<&str> = list.lines().collect();
-        assert_eq!(expected_set, result_set, "Search results do not match");
+        let mut result: CFTypeRef = std::ptr::null();
 
-        entry
-            .delete_password()
-            .expect("Failed to delete mac credential");
+        let status = unsafe {
+            security_framework_sys::keychain_item::SecItemCopyMatching(
+                query.as_concrete_TypeRef(),
+                &mut result as *mut _,
+            )
+        };
+
+        if status == errSecSuccess {
+            let attributes: CFDictionary =
+                unsafe { CFDictionary::wrap_under_create_rule(result as CFDictionaryRef) };
+            let count = attributes.len() as isize;
+            let mut keys: Vec<CFTypeRef> = Vec::with_capacity(count as usize);
+            let mut values: Vec<CFTypeRef> = Vec::with_capacity(count as usize);
+
+            // Ensure the vectors have the correct length
+            unsafe {
+                keys.set_len(count as usize);
+                values.set_len(count as usize);
+            }
+            let (keys, values) = attributes.get_keys_and_values();
+
+            for (key, value) in keys.into_iter().zip(values.into_iter()) {
+                let key_str =
+                    unsafe { CFString::wrap_under_get_rule(key as CFStringRef).to_string() };
+
+                let cfdate_id = CFDate::type_id();
+                let cfnumber_id = CFNumber::type_id();
+                let cfstring_id = CFString::type_id();
+
+                let value_str = match unsafe { CFGetTypeID(value) } {
+                    id if id == cfdate_id => {
+                        let new_str = format!("{:?}", unsafe {
+                            CFDate::wrap_under_get_rule(value as CFDateRef).to_CFPropertyList()
+                        });
+                        new_str.trim_matches('"').to_string()
+                    }
+                    id if id == cfnumber_id => {
+                        format!(
+                            "{}",
+                            unsafe { CFNumber::wrap_under_get_rule(value as CFNumberRef) }
+                                .to_i32()
+                                .unwrap()
+                        )
+                    }
+                    id if id == cfstring_id => {
+                        format!("{}", unsafe {
+                            CFString::wrap_under_get_rule(value as CFStringRef)
+                        })
+                    }
+                    _ => "Error getting type ID".to_string(),
+                };
+                if key_str == "labl".to_string() {
+                    expected.push_str(format!("{}\n", value_str).as_str());
+                } else if key_str == "crtr".to_string() {
+                    expected.push_str(format!("{}: unknown\n", key_str).as_str());
+                } else {
+                    expected.push_str(format!("{}: {}\n", key_str, value_str).as_str());
+                }
+            }
+        }
+
+        let actual_set: HashSet<&str> = list_result.lines().collect();
+        let expected_set: HashSet<&str> = expected.lines().collect();
+
+        assert_eq!(actual_set, expected_set);
+
+        delete_credential(&name, None);
     }
 
     #[test]
@@ -162,5 +242,69 @@ mod tests {
     #[test]
     fn test_search_by_account() {
         test_search("account")
+    }
+
+    #[test]
+    fn test_max_result() {
+        let name1 = generate_random_string();
+        let name2 = generate_random_string();
+        let name3 = generate_random_string();
+        let name4 = generate_random_string();
+
+        create_credential(&name1, Some("test-user"));
+        create_credential(&name2, Some("test-user"));
+        create_credential(&name3, Some("test-user"));
+        create_credential(&name4, Some("test-user"));
+
+        let search = Search::new()
+            .expect("Error creating test-max-result search")
+            .by("account", "test-user");
+        let list = List::list_credentials(search, Limit::Max(1))
+            .expect("Failed to parse results to string");
+
+        let lines = list.lines().count();
+
+        // Because the list is one large string concatenating
+        // credentials together, to test the return to only be
+        // one credential, we count the amount of lines returned.
+        // To adjust this test: add extra random names, create
+        // more credentials with test-user, adjust the limit and
+        // make the assert number a multiple of 6.
+        assert_eq!(7, lines);
+
+        delete_credential(&name1, Some("test-user"));
+        delete_credential(&name2, Some("test-user"));
+        delete_credential(&name3, Some("test-user"));
+        delete_credential(&name4, Some("test-user"));
+    }
+
+    #[test]
+    fn no_results() {
+        let name = generate_random_string();
+
+        let result = Search::new()
+            .expect("Failed to build new search")
+            .by("account", &name);
+
+        assert!(
+            matches!(result.unwrap_err(), Error::NoResults),
+            "Returned an empty value"
+        );
+    }
+
+    #[test]
+    fn invalid_search_by() {
+        let name = generate_random_string();
+
+        let result = Search::new()
+            .expect("Failed to build new search")
+            .by(&name, &name);
+
+        let _err = "Invalid search parameter, not Label, Service, or Account".to_string();
+
+        assert!(
+            matches!(&result.unwrap_err(), Error::SearchError(_err)),
+            "Search result returned with invalid parameter"
+        );
     }
 }

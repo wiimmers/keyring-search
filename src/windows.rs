@@ -287,20 +287,28 @@ mod tests {
 
     use byteorder::{ByteOrder, LittleEndian};
     use windows_sys::Win32::Foundation::FILETIME;
-    use windows_sys::Win32::Security::Credentials::{CredDeleteW, CredFree, CredReadW, CredWriteW, CREDENTIALW, CREDENTIAL_ATTRIBUTEW, CRED_FLAGS, CRED_PERSIST_ENTERPRISE, CRED_TYPE_GENERIC};
+    use windows_sys::Win32::Security::Credentials::{
+        CredDeleteW, CredFree, CredReadW, CredWriteW, CREDENTIALW, CREDENTIAL_ATTRIBUTEW,
+        CRED_FLAGS, CRED_PERSIST_ENTERPRISE, CRED_TYPE_GENERIC,
+    };
 
-    use crate::{Error, Limit, List};
     use crate::{tests::generate_random_string, Search};
+    use crate::{Error, Limit, List};
 
     use super::{get_last_written, match_cred_type, match_persist_type};
 
     fn to_wstr(s: &str) -> Vec<u16> {
         s.encode_utf16().chain(once(0)).collect()
-
     }
 
     fn delete_credential(name: &str) {
-        unsafe { CredDeleteW(to_wstr(&name).as_ptr(), CRED_TYPE_GENERIC, CRED_TYPE_GENERIC) };
+        unsafe {
+            CredDeleteW(
+                to_wstr(&name).as_ptr(),
+                CRED_TYPE_GENERIC,
+                CRED_TYPE_GENERIC,
+            )
+        };
     }
 
     fn create_credential(name: &str, user: Option<&str>) {
@@ -337,18 +345,23 @@ mod tests {
             UserName: user.as_mut_ptr(),
         };
 
-        let p_credential: *const CREDENTIALW = &mut credential; 
+        let p_credential: *const CREDENTIALW = &mut credential;
 
         unsafe { CredWriteW(p_credential, 0) };
     }
 
     fn test_search(by: &str) {
         let name = generate_random_string();
-        create_credential(&name, None); 
+        create_credential(&name, None);
         let mut r_credential: *mut CREDENTIALW = std::ptr::null_mut();
 
         let last_written_filetime = unsafe {
-            CredReadW(to_wstr(&name).as_ptr(), CRED_TYPE_GENERIC, CRED_FLAGS::default(), &mut r_credential);
+            CredReadW(
+                to_wstr(&name).as_ptr(),
+                CRED_TYPE_GENERIC,
+                CRED_FLAGS::default(),
+                &mut r_credential,
+            );
             let read_credential = *r_credential;
             CredFree(r_credential as *mut _);
             read_credential.LastWritten
@@ -356,16 +369,20 @@ mod tests {
 
         let expected = format!(
             "{}\nLast Written: {}\nType: {}\nPersist: {}\nUser: {}\nComment: {}\n",
-            name, 
-            unsafe { get_last_written(last_written_filetime) },  
+            name,
+            unsafe { get_last_written(last_written_filetime) },
             match_cred_type(CRED_TYPE_GENERIC).expect("Failed to match expected cred type"),
-            match_persist_type(CRED_PERSIST_ENTERPRISE).expect("Failed to match expected persist type"),
+            match_persist_type(CRED_PERSIST_ENTERPRISE)
+                .expect("Failed to match expected persist type"),
             name,
             name,
         );
-        
-        let search_result = Search::new().expect("Error creating test search").by(by, &name.clone());
-        let list = List::list_credentials(search_result, Limit::All).expect("Failed to parse search result to string");
+
+        let search_result = Search::new()
+            .expect("Error creating test search")
+            .by(by, &name.clone());
+        let list = List::list_credentials(search_result, Limit::All)
+            .expect("Failed to parse search result to string");
 
         let result_set: HashSet<&str> = list.lines().collect();
         let actual_set: HashSet<&str> = expected.lines().collect();
@@ -392,7 +409,7 @@ mod tests {
     #[test]
     fn test_max_result() {
         let name1 = generate_random_string();
-        let name2 = generate_random_string(); 
+        let name2 = generate_random_string();
         let name3 = generate_random_string();
         let name4 = generate_random_string();
 
@@ -401,16 +418,19 @@ mod tests {
         create_credential(&name3, Some("test-user"));
         create_credential(&name4, Some("test-user"));
 
-        let search = Search::new().expect("Error creating test-max-result search").by("user", "test-user");
-        let list = List::list_credentials(search, Limit::Max(1)).expect("Failed to parse results to string");
+        let search = Search::new()
+            .expect("Error creating test-max-result search")
+            .by("user", "test-user");
+        let list = List::list_credentials(search, Limit::Max(1))
+            .expect("Failed to parse results to string");
 
         let lines = list.lines().count();
 
-        // Because the list is one large string concatenating 
-        // credentials together, to test the return to only be 
+        // Because the list is one large string concatenating
+        // credentials together, to test the return to only be
         // one credential, we count the amount of lines returned.
         // To adjust this test: add extra random names, create
-        // more credentials with test-user, adjust the limit and 
+        // more credentials with test-user, adjust the limit and
         // make the assert number a multiple of 6.
         assert_eq!(6, lines);
 
