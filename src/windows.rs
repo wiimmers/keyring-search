@@ -378,9 +378,13 @@ mod tests {
             name,
         );
 
-        let search_result = Search::new()
-            .expect("Error creating test search")
-            .by(by, &name.clone());
+        let search_result = match by.to_ascii_lowercase().as_str() {
+            "user" => Search::new().expect("Error creating test search").by_user(&name.clone()),
+            "target" => Search::new().expect("Error creating test search").by_target(&name.clone()),
+            "service" => Search::new().expect("Error creating test search").by_service(&name.clone()),
+            _ => panic!("Unexpected search by parameter")
+        };
+        
         let list = List::list_credentials(search_result, Limit::All)
             .expect("Failed to parse search result to string");
 
@@ -420,7 +424,7 @@ mod tests {
 
         let search = Search::new()
             .expect("Error creating test-max-result search")
-            .by("user", "test-user");
+            .by_user("test-user");
         let list = List::list_credentials(search, Limit::Max(1))
             .expect("Failed to parse results to string");
 
@@ -446,7 +450,7 @@ mod tests {
 
         let result = Search::new()
             .expect("Failed to build new search")
-            .by("user", &name);
+            .by_user(&name);
 
         assert!(
             matches!(result.unwrap_err(), Error::NoResults),

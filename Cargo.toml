@@ -56,5 +56,7 @@ windows-sys = { version = "0.52", features = ["Win32_Foundation", "Win32_Securit
 [dev-dependencies]
 keyring = "2.3.3"
 rand = "0.8"
+
+[target.'cfg(target_os = "macos")'.dev-dependencies]
 security-framework-sys = "2.11.0"
 core-foundation = "0.9.4"
