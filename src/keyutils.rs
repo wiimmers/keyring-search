@@ -141,22 +141,22 @@ mod tests {
             credential.get_id().0,
             actual.description
         );
-        expected.push_str(format!("\tgid:\t{}\n", metadata.get_gid()).as_str());
-        expected.push_str(format!("\tuid:\t{}\n", metadata.get_uid()).as_str());
+        expected.push_str(format!("gid: {}\n", metadata.get_gid()).as_str());
+        expected.push_str(format!("uid: {}\n", metadata.get_uid()).as_str());
         expected.push_str(
             format!(
-                "\tperm:\t{}\n",
+                "perm: {}\n",
                 get_permission_chars(metadata.get_perms().bits().to_be_bytes()[0])
             )
             .as_str(),
         );
-        expected.push_str(format!("\tktype:\t{}\n", get_key_type(metadata.get_type())).as_str());
+        expected.push_str(format!("ktype: {}\n", get_key_type(metadata.get_type())).as_str());
 
         let query = format!("keyring-rs:{}@{}", name, name);
         let result = Search {
             inner: Box::new(super::KeyutilsCredentialSearch {}),
         }
-        .by("session", &query);
+        .by_user(&query);
         let list = List::list_credentials(result, Limit::All)
             .expect("Failed to parse string from HashMap result");
 

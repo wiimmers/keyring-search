@@ -379,12 +379,18 @@ mod tests {
         );
 
         let search_result = match by.to_ascii_lowercase().as_str() {
-            "user" => Search::new().expect("Error creating test search").by_user(&name.clone()),
-            "target" => Search::new().expect("Error creating test search").by_target(&name.clone()),
-            "service" => Search::new().expect("Error creating test search").by_service(&name.clone()),
-            _ => panic!("Unexpected search by parameter")
+            "user" => Search::new()
+                .expect("Error creating test search")
+                .by_user(&name.clone()),
+            "target" => Search::new()
+                .expect("Error creating test search")
+                .by_target(&name.clone()),
+            "service" => Search::new()
+                .expect("Error creating test search")
+                .by_service(&name.clone()),
+            _ => panic!("Unexpected search by parameter"),
         };
-        
+
         let list = List::list_credentials(search_result, Limit::All)
             .expect("Failed to parse search result to string");
 
