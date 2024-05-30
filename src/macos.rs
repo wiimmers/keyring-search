@@ -37,9 +37,9 @@ fn search(by: &str, query: &str) -> CredentialSearchResult {
         .load_attributes(true);
 
     let by = match by.to_ascii_lowercase().as_str() {
-        "label" => MacSearchType::Label,
+        "target" => MacSearchType::Label,
         "service" => MacSearchType::Service,
-        "account" => MacSearchType::Account,
+        "user" => MacSearchType::Account,
         _ => {
             return Err(ErrorCode::SearchError(
                 "Invalid search parameter, not Label, Service, or Account".to_string(),
@@ -133,9 +133,18 @@ mod tests {
         let name = generate_random_string();
         create_credential(&name, None);
 
-        let search_result = Search::new()
-            .expect("Error creating mac search test")
-            .by(by, &name);
+        let search_result = match by.to_ascii_lowercase().as_str() {
+            "account" => Search::new()
+                .expect("Error creating mac search test")
+                .by_user(&name),
+            "service" => Search::new()
+                .expect("Error creating mac search test")
+                .by_service(&name),
+            "label" => Search::new()
+                .expect("Error creating mac search test")
+                .by_target(&name),
+            _ => panic!("unexpected search by parameter"),
+        };
         let list_result = List::list_credentials(search_result, Limit::All)
             .expect("Failed to parse search result to string");
 
@@ -258,7 +267,7 @@ mod tests {
 
         let search = Search::new()
             .expect("Error creating test-max-result search")
-            .by("account", "test-user");
+            .by_user("test-user");
         let list = List::list_credentials(search, Limit::Max(1))
             .expect("Failed to parse results to string");
 
@@ -284,27 +293,11 @@ mod tests {
 
         let result = Search::new()
             .expect("Failed to build new search")
-            .by("account", &name);
+            .by_user(&name);
 
         assert!(
             matches!(result.unwrap_err(), Error::NoResults),
             "Returned an empty value"
-        );
-    }
-
-    #[test]
-    fn invalid_search_by() {
-        let name = generate_random_string();
-
-        let result = Search::new()
-            .expect("Failed to build new search")
-            .by(&name, &name);
-
-        let _err = "Invalid search parameter, not Label, Service, or Account".to_string();
-
-        assert!(
-            matches!(&result.unwrap_err(), Error::SearchError(_err)),
-            "Search result returned with invalid parameter"
         );
     }
 }

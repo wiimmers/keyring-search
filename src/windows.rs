@@ -453,20 +453,4 @@ mod tests {
             "Returned an empty value"
         );
     }
-
-    #[test]
-    fn invalid_search_by() {
-        let name = generate_random_string();
-
-        let result = Search::new()
-            .expect("Failed to build new search")
-            .by(&name, &name);
-
-        let _err = "Invalid search parameter, not Target, Service, or User".to_string();
-
-        assert!(
-            matches!(&result.unwrap_err(), Error::SearchError(_err)),
-            "Search result returned with invalid parameter"
-        );
-    }
 }

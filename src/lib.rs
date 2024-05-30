@@ -137,8 +137,16 @@ impl Search {
     /// # Example
     ///     let search = keyring_search::Search::new().unwrap();
     ///     let results = search.by("user", "Mr. Foo Bar");
-    pub fn by(&self, by: &str, query: &str) -> CredentialSearchResult {
-        self.inner.by(by, query)
+    pub fn by_target(&self, query: &str) -> CredentialSearchResult {
+        self.inner.by("target", query)
+    }
+
+    pub fn by_user(&self, query: &str) -> CredentialSearchResult {
+        self.inner.by("user", query)
+    }
+
+    pub fn by_service(&self, query: &str) -> CredentialSearchResult {
+        self.inner.by("service", query)
     }
 }
 
