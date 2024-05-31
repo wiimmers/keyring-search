@@ -43,7 +43,7 @@ fn search(by: &str, query: &str) -> CredentialSearchResult {
 
     let by = match by.to_ascii_lowercase().as_str() {
         "service" => IosSearchType::Service,
-        "account" => IosSearchType::Account,
+        "user" => IosSearchType::Account,
         _ => {
             return Err(ErrorCode::SearchError(
                 "Invalid search parameter, not Label, Service, or Account".to_string(),

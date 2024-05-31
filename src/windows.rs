@@ -87,13 +87,13 @@ pub fn default_credential_search() -> Box<CredentialSearch> {
 impl CredentialSearchApi for WinCredentialSearch {
     /// Specifies what parameter to search by and the query string
     ///
-    /// Can return a [SearchError](Error::SearchError)
-    /// or [Unexpected](Error::Unexpected),
-    /// Will return a [NoResults](Error::NoResults)
+    /// Can return a [SearchError](super::Error::SearchError)
+    /// or [Unexpected](super::Error::Unexpected),
+    /// Will return a [NoResults](super::Error::NoResults)
     /// if the search returns an empty String.
     /// # Example
     ///     let search = keyring_search::Search::new().unwrap();
-    ///     let results = search.by("user", "Mr. Foo Bar");
+    ///     let results = search.by_user("Mr. Foo Bar");
     fn by(&self, by: &str, query: &str) -> CredentialSearchResult {
         let results = match search_type(by, query) {
             Ok(results) => results,
@@ -106,15 +106,9 @@ impl CredentialSearchApi for WinCredentialSearch {
 
             inner_map.insert("Comment".to_string(), result.comment.clone());
             inner_map.insert("User".to_string(), result.username.clone());
-            inner_map.insert(
-                "Type".to_string(),
-                match_cred_type(result.cred_type.clone())?,
-            );
+            inner_map.insert("Type".to_string(), match_cred_type(result.cred_type)?);
             inner_map.insert("Last Written".to_string(), result.last_written.to_string());
-            inner_map.insert(
-                "Persist".to_string(),
-                match_persist_type(result.persist.clone())?,
-            );
+            inner_map.insert("Persist".to_string(), match_persist_type(result.persist)?);
 
             outer_map.insert(result.target_name.to_string(), inner_map);
         }
@@ -352,6 +346,7 @@ mod tests {
 
     fn test_search(by: &str) {
         let name = generate_random_string();
+        println!("test-search by {}\nname {}\n", &by, &name);
         create_credential(&name, None);
         let mut r_credential: *mut CREDENTIALW = std::ptr::null_mut();
 
@@ -397,8 +392,8 @@ mod tests {
         let result_set: HashSet<&str> = list.lines().collect();
         let actual_set: HashSet<&str> = expected.lines().collect();
 
-        assert_eq!(result_set, actual_set);
         delete_credential(&name);
+        assert_eq!(result_set, actual_set);
     }
 
     #[test]
@@ -423,6 +418,14 @@ mod tests {
         let name3 = generate_random_string();
         let name4 = generate_random_string();
 
+        println!(
+            "test-max-result:\nname1 {}\nname2 {}\nname3 {}\nname4 {}",
+            &name1.clone(),
+            &name2.clone(),
+            &name3.clone(),
+            &name4.clone()
+        );
+
         create_credential(&name1, Some("test-user"));
         create_credential(&name2, Some("test-user"));
         create_credential(&name3, Some("test-user"));
@@ -436,6 +439,11 @@ mod tests {
 
         let lines = list.lines().count();
 
+        delete_credential(&name1);
+        delete_credential(&name2);
+        delete_credential(&name3);
+        delete_credential(&name4);
+
         // Because the list is one large string concatenating
         // credentials together, to test the return to only be
         // one credential, we count the amount of lines returned.
@@ -443,11 +451,6 @@ mod tests {
         // more credentials with test-user, adjust the limit and
         // make the assert number a multiple of 6.
         assert_eq!(6, lines);
-
-        delete_credential(&name1);
-        delete_credential(&name2);
-        delete_credential(&name3);
-        delete_credential(&name4);
     }
 
     #[test]

@@ -159,7 +159,7 @@ pub struct Search {
 /// The default search types are: Target, User, and Service.
 /// On linux-keyutils these all default to searching the 'session'
 /// keyring. If searching in a different keyring, utilize the
-/// platform specific [search_by_keyring](keyutils::search_by_keyring) function
+/// platform specific `search_by_keyring` function
 impl Search {
     /// Create a new instance of the Credential Search.
     ///

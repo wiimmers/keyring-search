@@ -26,8 +26,7 @@ enum MacSearchType {
     Service,
     Account,
 }
-// Perform search, can throw a SearchError, returns a CredentialSearchResult.
-// by must be "label", "service", or "account".
+// Perform search, returns a CredentialSearchResult.
 fn search(by: &str, query: &str) -> CredentialSearchResult {
     let mut new_search = item::ItemSearchOptions::new();
 
