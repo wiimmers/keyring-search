@@ -22,9 +22,10 @@ use keyring_search::{Search, Limit, List};
 
 fn main() {
     let user = "Mr. Foo Bar";
-    let service = "Bar inc.";
+    let service = "Foo.app";
+    let target = "rust-keyring";
 
-    let entry = Entry::new(service, user)
+    let entry = Entry::new_with_target(target, service, user)
         .expect("Failed to create entry");
     entry
         .set_password("test-password")
