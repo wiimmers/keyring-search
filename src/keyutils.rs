@@ -15,12 +15,20 @@ pub fn default_credential_search() -> Box<CredentialSearch> {
 }
 
 impl CredentialSearchApi for KeyutilsCredentialSearch {
-    fn by(&self, by: &str, query: &str) -> CredentialSearchResult {
-        search_by_keyring(by, query)
+    /// The default search for keyutils is in the 'session' keyring.
+    ///
+    /// If more control over the keyring is needed, call the
+    /// (search_by_keyring) function manually.
+    fn by(&self, _by: &str, query: &str) -> CredentialSearchResult {
+        search_by_keyring("session", query)
     }
 }
-// Search for credential items in the specified keyring.
-fn search_by_keyring(by: &str, query: &str) -> CredentialSearchResult {
+/// Search for credential items in the specified keyring.
+///
+/// To utilize search of any keyring, call this function
+/// directly. The generic platform independent search
+/// defaults to the `session` keyring.
+pub fn search_by_keyring(by: &str, query: &str) -> CredentialSearchResult {
     let by = match by {
         "thread" => KeyRingIdentifier::Thread,
         "process" => KeyRingIdentifier::Process,
@@ -38,7 +46,10 @@ fn search_by_keyring(by: &str, query: &str) -> CredentialSearchResult {
 
     let result = match ring.search(query) {
         Ok(result) => result,
-        Err(err) => return Err(ErrorCode::SearchError(err.to_string())),
+        Err(err) => match err {
+            linux_keyutils::KeyError::KeyDoesNotExist => return Err(ErrorCode::NoResults),
+            _ => return Err(ErrorCode::SearchError(err.to_string())),
+        },
     };
 
     let result_data = match result.metadata() {
@@ -110,7 +121,7 @@ fn get_permission_chars(permission_data: u8) -> String {
 #[cfg(test)]
 mod tests {
     use super::{get_key_type, get_permission_chars, KeyRing, KeyRingIdentifier};
-    use crate::{tests::generate_random_string, Limit, List, Search};
+    use crate::{tests::generate_random_string, Error, Limit, List, Search};
     use keyring::{credential::CredentialApi, keyutils::KeyutilsCredential};
     use std::collections::HashSet;
 
@@ -166,5 +177,15 @@ mod tests {
         entry
             .delete_password()
             .expect("Couldn't delete test-search-by-user");
+    }
+
+    #[test]
+    fn test_no_results() {
+        let name = generate_random_string();
+        let search = Search::new()
+            .expect("Error creating new search")
+            .by_user(&name);
+
+        assert!(matches!(search.unwrap_err(), Error::NoResults));
     }
 }

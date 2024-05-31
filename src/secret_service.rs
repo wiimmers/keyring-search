@@ -39,9 +39,9 @@ impl CredentialSearchApi for SsCredentialSearch {
 /// For more control over the `by` parameter, use this function.
 /// The generic search feature only covers searching by three
 /// commonly used keys in the Secret Service keystore,
-/// 'username', 'application', 'service'. For most clients, 
+/// 'username', 'application', 'service'. For most clients,
 /// this should be sufficient.
-fn search_items(by: &str, query: &str) -> CredentialSearchResult {
+pub fn search_items(by: &str, query: &str) -> CredentialSearchResult {
     let ss = match SecretService::connect(EncryptionType::Plain) {
         Ok(connection) => connection,
         Err(err) => return Err(ErrorCode::SearchError(err.to_string())),
