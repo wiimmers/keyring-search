@@ -56,6 +56,7 @@ windows-sys = { version = "0.52", features = ["Win32_Foundation", "Win32_Securit
 [dev-dependencies]
 keyring = "2.3.3"
 rand = "0.8"
+clap = { version = "4", features = ["derive", "wrap_help"] }
 
 [target.'cfg(target_os = "macos")'.dev-dependencies]
 security-framework-sys = "2.11.0"
