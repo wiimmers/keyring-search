@@ -146,6 +146,12 @@ use mock as default;
 pub mod error;
 pub mod search;
 
+pub fn set_default_credential_search(default_search: Box<CredentialSearch>) -> Result<Search> {
+    Ok(Search {
+        inner: default_search,
+    })
+}
+
 fn default_credential_search() -> Result<Search> {
     let credentials = default::default_credential_search();
     Ok(Search { inner: credentials })
