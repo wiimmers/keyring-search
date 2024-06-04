@@ -1,18 +1,22 @@
-/// CLI search application
-///
-/// To run from keyring-search
-/// `cargo run --example cli --` [commands]
-/// `--target` search by target
-/// `--user` search by user
-/// `--service` search by service
-/// Optional subcommands
-/// `limit` [integer] restrict search to return specified amount of results
-/// `all` unrestricted amount of search results
-/// Defaults to all
+/*  
+CLI search application
+
+To run from keyring-search
+`cargo run --example cli --` [commands]
+`--target` search by target
+`--user` search by user
+`--service` search by service
+Defaults to target if no commands are passed
+Optional subcommands
+`limit` [integer] restrict search to return specified amount of results
+`all` unrestricted amount of search results
+Defaults to all 
+*/
 extern crate keyring_search;
 
 use clap::Parser;
 use keyring_search::{Error, Limit, List, Search};
+use std::io::{self, Write};
 
 fn main() {
     let args: Cli = Cli::parse();
@@ -39,8 +43,15 @@ fn main() {
         let result = search.by_user(&query);
         list = List::list_credentials(result, limit);
     } else {
-        eprintln!("Must specify only one parameter, --target, --service, --user");
-        std::process::exit(0)
+        print!("Search defaulted to `by_target`, enter query: "); 
+        let mut arg = String::new();
+        io::stdout().flush().expect("Failed to flush stdout");
+
+        io::stdin().read_line(&mut arg)
+            .expect("Invalid input arg");
+
+        let result = search.by_target(&arg.trim());
+        list = List::list_credentials(result, limit);
     }
 
     match list {
