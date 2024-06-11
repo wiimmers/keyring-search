@@ -14,55 +14,6 @@ macOS, and iOS.
 This crate, originally planned as a feature for
 [keyring](https://crates.io/crates/keyring) provides a broad search of
 the platform specific keystores based on user provided search parameters.
-
-```rust
-extern crate keyring_search;
-use keyring::Entry;
-use keyring_search::{Search, Limit, List};
-
-fn main() {
-    let user = "Mr. Foo Bar";
-    let service = "Foo.app";
-    let target = "rust-keyring";
-
-    let entry = Entry::new_with_target(target, service, user)
-        .expect("Failed to create entry");
-    entry
-        .set_password("test-password")
-        .expect("Failed to set test password");
-
-    let search_users_result = Search::new()
-        .expect("Error creating search structure")
-        .by_user(user);
-    let list_users_result = List::list_credentials(search_users_result, Limit::All)
-        .expect("Error parsing to search user result to string");
-
-    let search_targets_result = Search::new()
-        .expect("Error creating search structure")
-        .by_target("rust-keyring");
-    let list_targets_result = List::list_credentials(search_targets_result, Limit::All)
-        .expect("Error parsing to search target result to string");
-
-    let search_services_result = Search::new()
-        .expect("Error creating search structure")
-        .by_service(service);
-    let list_services_result = List::list_credentials(search_services_result, Limit::All)
-        .expect("Error parsing to search service result to string");
-
-    println!(
-        "Results of by_user\n{}Results of by_target\n{}Results of by_service\n{}",
-        list_users_result,
-        list_targets_result,
-        list_services_result
-    );
-
-    entry
-        .delete_password()
-        .expect("Failed to delete password");
-}
-```
-
-
  */
 
 pub use error::{Error, Result};

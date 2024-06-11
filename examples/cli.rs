@@ -1,4 +1,4 @@
-/*  
+/*
 CLI search application
 
 To run from keyring-search
@@ -10,7 +10,7 @@ Defaults to target if no commands are passed
 Optional subcommands
 `limit` [integer] restrict search to return specified amount of results
 `all` unrestricted amount of search results
-Defaults to all 
+Defaults to all
 */
 extern crate keyring_search;
 
@@ -43,12 +43,11 @@ fn main() {
         let result = search.by_user(&query);
         list = List::list_credentials(result, limit);
     } else {
-        print!("Search defaulted to `by_target`, enter query: "); 
+        print!("Search defaulted to `by_target`, enter query: ");
         let mut arg = String::new();
         io::stdout().flush().expect("Failed to flush stdout");
 
-        io::stdin().read_line(&mut arg)
-            .expect("Invalid input arg");
+        io::stdin().read_line(&mut arg).expect("Invalid input arg");
 
         let result = search.by_target(&arg.trim());
         list = List::list_credentials(result, limit);

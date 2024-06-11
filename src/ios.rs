@@ -1,9 +1,6 @@
 use std::collections::HashMap;
 
-use security_framework::passwords::{
-    delete_generic_password, get_generic_password, set_generic_password,
-};
-use security_framework::{base::Error, item};
+use security_framework::item::{ItemClass, ItemSearchOptions, Limit};
 
 use super::error::{Error as ErrorCode, Result};
 use super::search::{CredentialSearch, CredentialSearchApi, CredentialSearchResult};
@@ -32,23 +29,24 @@ enum IosSearchType {
 }
 
 // Perform search, can throw a SearchError, returns a CredentialSearchResult.
-// by must be "label", "service", or "account".
 fn search(by: &str, query: &str) -> CredentialSearchResult {
-    let mut new_search = item::ItemSearchOptions::new();
+    let mut new_search = ItemSearchOptions::new();
 
     let search_default = &mut new_search
-        .class(item::ItemClass::generic_password())
-        .limit(item::Limit::All)
-        .load_attributes(true);
+        .class(ItemClass::generic_password())
+        .limit(Limit::All)
+        .load_attributes(true)
+        .case_insensitive(Some(true));
 
     let by = match by.to_ascii_lowercase().as_str() {
         "service" => IosSearchType::Service,
         "user" => IosSearchType::Account,
-        _ => {
-            return Err(ErrorCode::SearchError(
-                "Invalid search parameter, not Label, Service, or Account".to_string(),
+        "target" => {
+            return Err(ErrorCode::Unexpected(
+                "cannot search by target in iOS, please use by_service or by_user".to_string(),
             ))
         }
+        _ => return Err(ErrorCode::Unexpected("by parameter iOS".to_string())),
     };
 
     let search = match by {
@@ -60,13 +58,16 @@ fn search(by: &str, query: &str) -> CredentialSearchResult {
 
     let results = match search {
         Ok(items) => items,
-        Err(err) => return Err(ErrorCode::SearchError(err.to_string())),
+        Err(err) => {
+            println!("Error while searching, {}", err.to_string());
+            return Err(ErrorCode::SearchError(err.to_string()));
+        }
     };
 
     for item in results {
         match to_credential_search_result(item.simplify_dict(), &mut outer_map) {
             Ok(_) => {}
-            Err(err) => return Err(ErrorCode::SearchError(err.to_string())),
+            Err(err) => return Err(err),
         }
     }
 
@@ -79,16 +80,21 @@ fn to_credential_search_result(
     item: Option<HashMap<String, String>>,
     outer_map: &mut HashMap<String, HashMap<String, String>>,
 ) -> Result<()> {
-    let mut result = match item {
-        None => {
-            return Err(ErrorCode::SearchError(
-                "Search returned no items".to_string(),
-            ))
-        }
+    let result = match item {
+        None => return Err(ErrorCode::NoResults),
         Some(map) => map,
     };
 
-    let label = "EMPTY LABEL".to_string();
+    let acct = result
+        .get("acct")
+        .unwrap_or(&"Empty acct value".to_string())
+        .to_owned();
+    let svce = result
+        .get("svce")
+        .unwrap_or(&"Empty svce value".to_string())
+        .to_owned();
+
+    let label = format!("{acct}@{svce}");
 
     outer_map.insert(format!("Label: {}", label), result);
 

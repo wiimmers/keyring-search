@@ -12,7 +12,7 @@ To use this library in your project add the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-keyring-search = "0.2.0"
+keyring-search = "1"
 ```
 
 This is a cross-platform library for searching the platform specific keystore.
@@ -35,7 +35,7 @@ use keyring_search::{Search, Limit, List};
 
 let result = Search::new()
     .expect("ERROR")
-    .by("user", "test-user");
+    .by_user("test-user");
 let list = List::list_credentials(result, Limit::All)
     .expect("Error");
 
@@ -52,7 +52,7 @@ use keyring_search::{Search, Limit, List};
 
 let result = Search::new()
     .expect("ERROR")
-    .by("user", "test-user");
+    .by_user("test-user");
 let list = List::list_credentials(result, Limit::All)
     .expect("Error");
 
@@ -62,16 +62,16 @@ println!("{}", list);
 
 ### Linux - Keyutils 
 If using the Linux Keyutils platform, the keystore is non persistent and is used more
-as a secure cache. However, this can still be searched. The breadth of the by method is large
-and encompasses the different types of keyrings available: "thread", "process", "session,
-"user", "user session", and "group". Because of this searching mechanism, the search has to be
-rather specific while limiting the different types of data to search, i.e. user, account, service. 
+To utilize search of any keyring, call this function directly. The generic platform 
+independent search defaults to the `session` keyring and ignores the `by` parameter. 
+To customize the search for other keyrings besides `session` use `search_by_keyring` 
+located in the keyutils module.
 ```rust
 use keyring_search::{Search, Limit, List};
 
 let result = Search::new()
     .expect("ERROR")
-    .by("session", "test-user@test-service");
+    .by_user("test-user@test-service");
 let list = List::list_credentials(result, Limit::All)
     .expect("Error");
 
@@ -81,12 +81,15 @@ println!("{}", list);
 
 ### MacOS 
 MacOS machines have the option to search by 'account', 'service', or 'label.
+`by_user` searches by account
+`by_target` searches by label 
+`by_service` searches by service
 ```rust
 use keyring_search::{Search, Limit, List};
 
 let result = Search::new()
     .expect("ERROR")
-    .by("account", "test-user");
+    .by_user("test-user");
 let list = List::list_credentials(result, Limit::All)
     .expect("Error");
 
@@ -95,9 +98,27 @@ println!("{}", list);
 ```
 
 ## Errors
-Search Error is the only error type currently. 
+SearchError returns due to any error encountered while creating or performing a search, either due to regex, formatting, or construction of search.
+NoResults returns when no results are found.
+Unexpected returns when an unexpected parameter is passed to or returned from a function.
 ## Examples
-Examples coming soon.
+A working CLI application is bundled in the examples
+Default: `cargo run --example cli` (defaults to by target, requires a query entered at startup)
+By user: `cargo run --example cli -- --user test-user` 
+By service: `cargo run --example cli -- --service test-service` 
+By target: `cargo run --example cli -- --target test-target` 
+Appending the subcommand `limit` to the end of any of these followed by a number will limit results to that amount.
+`cargo run --example cli -- --target test-target limit 2`
+Without the `limit` argument, the search defaults to displaying all results, although it is not necessary passing `all`
+gives the same result. 
+`cargo run --example cli -- --target test-target all`
+
+!!! IOS IS CURRENTLY UNDER DEVELOPMENT !!!
+Currently, the iOS module always returns no results, efforts are being made to alleviate this issue. 
+To build the iOS library for linking to the XCode project run `cargo lipo --manifest-path examples/ios/rs/Cargo.toml --release`
+in the project directory. This should be linked within the project already. Although the article is older and not all architectures 
+outlined are still in use, information about building rust for iOS can be 
+found here: [rust on ios](https://mozilla.github.io/firefox-browser-architecture/experiments/2017-09-06-rust-on-ios.html), 
 ## Client Testing
 Basic tests for the search platform.
 ## Platforms

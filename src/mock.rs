@@ -1,18 +1,18 @@
 /*!
 # Mock Credential searching mechanism
 
-This module creates a mock credential store to for testing a credential 
-search. The other modules, aside from Windows, have built in search APIs that 
+This module creates a mock credential store to for testing a credential
+search. The other modules, aside from Windows, have built in search APIs that
 keyring-search utilizes. The mock credential search mimics the custom regex
 that the Windows module uses to search through all credentials.
 
 To use this search instead of default, make this call during application startup:
 ```rust
 use keyring_search::{set_default_credential_search, mock};
-set_default_credential_search(mock::default_credential_search()); 
+set_default_credential_search(mock::default_credential_search());
 ```
 
-The mock module creates a default credential store that can be searched with the 
+The mock module creates a default credential store that can be searched with the
 keyring-search API.
  */
 

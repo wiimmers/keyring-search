@@ -1,0 +1,621 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		2D69EDAA2C1354D8005CFC75 /* CredentialSnifferApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D69EDA92C1354D8005CFC75 /* CredentialSnifferApp.swift */; };
+		2D69EDAC2C1354D8005CFC75 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D69EDAB2C1354D8005CFC75 /* ContentView.swift */; };
+		2D69EDAE2C1354DC005CFC75 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2D69EDAD2C1354DC005CFC75 /* Assets.xcassets */; };
+		2D69EDB12C1354DC005CFC75 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2D69EDB02C1354DC005CFC75 /* Preview Assets.xcassets */; };
+		2D69EDBB2C1354DC005CFC75 /* CredentialSnifferTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D69EDBA2C1354DC005CFC75 /* CredentialSnifferTests.swift */; };
+		2D69EDC52C1354DC005CFC75 /* CredentialSnifferUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D69EDC42C1354DC005CFC75 /* CredentialSnifferUITests.swift */; };
+		2D69EDC72C1354DC005CFC75 /* CredentialSnifferUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D69EDC62C1354DC005CFC75 /* CredentialSnifferUITestsLaunchTests.swift */; };
+		2D69EDD52C1383B7005CFC75 /* libkeyring_search_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2D69EDD42C13839B005CFC75 /* libkeyring_search_ios.a */; };
+		2D69EDD72C1383E7005CFC75 /* libresolv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 2D69EDD62C1383E0005CFC75 /* libresolv.tbd */; };
+		2D69EDDB2C138846005CFC75 /* CredentialSniffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D69EDDA2C138846005CFC75 /* CredentialSniffer.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		2D69EDB72C1354DC005CFC75 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2D69ED9E2C1354D8005CFC75 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 2D69EDA52C1354D8005CFC75;
+			remoteInfo = CredentialSniffer;
+		};
+		2D69EDC12C1354DC005CFC75 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2D69ED9E2C1354D8005CFC75 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 2D69EDA52C1354D8005CFC75;
+			remoteInfo = CredentialSniffer;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		2D69EDA62C1354D8005CFC75 /* CredentialSniffer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CredentialSniffer.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		2D69EDA92C1354D8005CFC75 /* CredentialSnifferApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CredentialSnifferApp.swift; sourceTree = "<group>"; };
+		2D69EDAB2C1354D8005CFC75 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		2D69EDAD2C1354DC005CFC75 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		2D69EDB02C1354DC005CFC75 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		2D69EDB62C1354DC005CFC75 /* CredentialSnifferTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CredentialSnifferTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		2D69EDBA2C1354DC005CFC75 /* CredentialSnifferTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CredentialSnifferTests.swift; sourceTree = "<group>"; };
+		2D69EDC02C1354DC005CFC75 /* CredentialSnifferUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CredentialSnifferUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		2D69EDC42C1354DC005CFC75 /* CredentialSnifferUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CredentialSnifferUITests.swift; sourceTree = "<group>"; };
+		2D69EDC62C1354DC005CFC75 /* CredentialSnifferUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CredentialSnifferUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		2D69EDD42C13839B005CFC75 /* libkeyring_search_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libkeyring_search_ios.a; path = ../../rs/target/universal/release/libkeyring_search_ios.a; sourceTree = "<group>"; };
+		2D69EDD62C1383E0005CFC75 /* libresolv.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libresolv.tbd; path = usr/lib/libresolv.tbd; sourceTree = SDKROOT; };
+		2D69EDD82C1384EC005CFC75 /* search.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = search.h; path = ../../rs/src/search.h; sourceTree = "<group>"; };
+		2D69EDD92C13850A005CFC75 /* search-bridge.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "search-bridge.h"; sourceTree = "<group>"; };
+		2D69EDDA2C138846005CFC75 /* CredentialSniffer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CredentialSniffer.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		2D69EDA32C1354D8005CFC75 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2D69EDD52C1383B7005CFC75 /* libkeyring_search_ios.a in Frameworks */,
+				2D69EDD72C1383E7005CFC75 /* libresolv.tbd in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		2D69EDB32C1354DC005CFC75 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		2D69EDBD2C1354DC005CFC75 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		2D69ED9D2C1354D8005CFC75 = {
+			isa = PBXGroup;
+			children = (
+				2D69EDD82C1384EC005CFC75 /* search.h */,
+				2D69EDD92C13850A005CFC75 /* search-bridge.h */,
+				2D69EDA82C1354D8005CFC75 /* CredentialSniffer */,
+				2D69EDB92C1354DC005CFC75 /* CredentialSnifferTests */,
+				2D69EDC32C1354DC005CFC75 /* CredentialSnifferUITests */,
+				2D69EDA72C1354D8005CFC75 /* Products */,
+				2D69EDD32C13839B005CFC75 /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		2D69EDA72C1354D8005CFC75 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				2D69EDA62C1354D8005CFC75 /* CredentialSniffer.app */,
+				2D69EDB62C1354DC005CFC75 /* CredentialSnifferTests.xctest */,
+				2D69EDC02C1354DC005CFC75 /* CredentialSnifferUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		2D69EDA82C1354D8005CFC75 /* CredentialSniffer */ = {
+			isa = PBXGroup;
+			children = (
+				2D69EDA92C1354D8005CFC75 /* CredentialSnifferApp.swift */,
+				2D69EDAB2C1354D8005CFC75 /* ContentView.swift */,
+				2D69EDDA2C138846005CFC75 /* CredentialSniffer.swift */,
+				2D69EDAD2C1354DC005CFC75 /* Assets.xcassets */,
+				2D69EDAF2C1354DC005CFC75 /* Preview Content */,
+			);
+			path = CredentialSniffer;
+			sourceTree = "<group>";
+		};
+		2D69EDAF2C1354DC005CFC75 /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				2D69EDB02C1354DC005CFC75 /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		2D69EDB92C1354DC005CFC75 /* CredentialSnifferTests */ = {
+			isa = PBXGroup;
+			children = (
+				2D69EDBA2C1354DC005CFC75 /* CredentialSnifferTests.swift */,
+			);
+			path = CredentialSnifferTests;
+			sourceTree = "<group>";
+		};
+		2D69EDC32C1354DC005CFC75 /* CredentialSnifferUITests */ = {
+			isa = PBXGroup;
+			children = (
+				2D69EDC42C1354DC005CFC75 /* CredentialSnifferUITests.swift */,
+				2D69EDC62C1354DC005CFC75 /* CredentialSnifferUITestsLaunchTests.swift */,
+			);
+			path = CredentialSnifferUITests;
+			sourceTree = "<group>";
+		};
+		2D69EDD32C13839B005CFC75 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				2D69EDD62C1383E0005CFC75 /* libresolv.tbd */,
+				2D69EDD42C13839B005CFC75 /* libkeyring_search_ios.a */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		2D69EDA52C1354D8005CFC75 /* CredentialSniffer */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2D69EDCA2C1354DC005CFC75 /* Build configuration list for PBXNativeTarget "CredentialSniffer" */;
+			buildPhases = (
+				2D69EDA22C1354D8005CFC75 /* Sources */,
+				2D69EDA32C1354D8005CFC75 /* Frameworks */,
+				2D69EDA42C1354D8005CFC75 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = CredentialSniffer;
+			productName = CredentialSniffer;
+			productReference = 2D69EDA62C1354D8005CFC75 /* CredentialSniffer.app */;
+			productType = "com.apple.product-type.application";
+		};
+		2D69EDB52C1354DC005CFC75 /* CredentialSnifferTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2D69EDCD2C1354DC005CFC75 /* Build configuration list for PBXNativeTarget "CredentialSnifferTests" */;
+			buildPhases = (
+				2D69EDB22C1354DC005CFC75 /* Sources */,
+				2D69EDB32C1354DC005CFC75 /* Frameworks */,
+				2D69EDB42C1354DC005CFC75 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				2D69EDB82C1354DC005CFC75 /* PBXTargetDependency */,
+			);
+			name = CredentialSnifferTests;
+			productName = CredentialSnifferTests;
+			productReference = 2D69EDB62C1354DC005CFC75 /* CredentialSnifferTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		2D69EDBF2C1354DC005CFC75 /* CredentialSnifferUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2D69EDD02C1354DC005CFC75 /* Build configuration list for PBXNativeTarget "CredentialSnifferUITests" */;
+			buildPhases = (
+				2D69EDBC2C1354DC005CFC75 /* Sources */,
+				2D69EDBD2C1354DC005CFC75 /* Frameworks */,
+				2D69EDBE2C1354DC005CFC75 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				2D69EDC22C1354DC005CFC75 /* PBXTargetDependency */,
+			);
+			name = CredentialSnifferUITests;
+			productName = CredentialSnifferUITests;
+			productReference = 2D69EDC02C1354DC005CFC75 /* CredentialSnifferUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		2D69ED9E2C1354D8005CFC75 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1520;
+				LastUpgradeCheck = 1520;
+				TargetAttributes = {
+					2D69EDA52C1354D8005CFC75 = {
+						CreatedOnToolsVersion = 15.2;
+					};
+					2D69EDB52C1354DC005CFC75 = {
+						CreatedOnToolsVersion = 15.2;
+						TestTargetID = 2D69EDA52C1354D8005CFC75;
+					};
+					2D69EDBF2C1354DC005CFC75 = {
+						CreatedOnToolsVersion = 15.2;
+						TestTargetID = 2D69EDA52C1354D8005CFC75;
+					};
+				};
+			};
+			buildConfigurationList = 2D69EDA12C1354D8005CFC75 /* Build configuration list for PBXProject "CredentialSniffer" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 2D69ED9D2C1354D8005CFC75;
+			productRefGroup = 2D69EDA72C1354D8005CFC75 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				2D69EDA52C1354D8005CFC75 /* CredentialSniffer */,
+				2D69EDB52C1354DC005CFC75 /* CredentialSnifferTests */,
+				2D69EDBF2C1354DC005CFC75 /* CredentialSnifferUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		2D69EDA42C1354D8005CFC75 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2D69EDB12C1354DC005CFC75 /* Preview Assets.xcassets in Resources */,
+				2D69EDAE2C1354DC005CFC75 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		2D69EDB42C1354DC005CFC75 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		2D69EDBE2C1354DC005CFC75 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		2D69EDA22C1354D8005CFC75 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2D69EDDB2C138846005CFC75 /* CredentialSniffer.swift in Sources */,
+				2D69EDAC2C1354D8005CFC75 /* ContentView.swift in Sources */,
+				2D69EDAA2C1354D8005CFC75 /* CredentialSnifferApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		2D69EDB22C1354DC005CFC75 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2D69EDBB2C1354DC005CFC75 /* CredentialSnifferTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		2D69EDBC2C1354DC005CFC75 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2D69EDC52C1354DC005CFC75 /* CredentialSnifferUITests.swift in Sources */,
+				2D69EDC72C1354DC005CFC75 /* CredentialSnifferUITestsLaunchTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		2D69EDB82C1354DC005CFC75 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 2D69EDA52C1354D8005CFC75 /* CredentialSniffer */;
+			targetProxy = 2D69EDB72C1354DC005CFC75 /* PBXContainerItemProxy */;
+		};
+		2D69EDC22C1354DC005CFC75 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 2D69EDA52C1354D8005CFC75 /* CredentialSniffer */;
+			targetProxy = 2D69EDC12C1354DC005CFC75 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		2D69EDC82C1354DC005CFC75 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		2D69EDC92C1354DC005CFC75 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		2D69EDCB2C1354DC005CFC75 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"CredentialSniffer/Preview Content\"";
+				DEVELOPMENT_TEAM = D6RQ448SYV;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/../../rs/target/universal/release";
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.wiimmers.CredentialSniffer;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "$(PROJECT_DIR)/search-bridge.h";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		2D69EDCC2C1354DC005CFC75 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"CredentialSniffer/Preview Content\"";
+				DEVELOPMENT_TEAM = D6RQ448SYV;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/../../rs/target/universal/release";
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.wiimmers.CredentialSniffer;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "$(PROJECT_DIR)/search-bridge.h";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		2D69EDCE2C1354DC005CFC75 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = D6RQ448SYV;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.wiimmers.CredentialSnifferTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CredentialSniffer.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/CredentialSniffer";
+			};
+			name = Debug;
+		};
+		2D69EDCF2C1354DC005CFC75 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = D6RQ448SYV;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.wiimmers.CredentialSnifferTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CredentialSniffer.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/CredentialSniffer";
+			};
+			name = Release;
+		};
+		2D69EDD12C1354DC005CFC75 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = D6RQ448SYV;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.wiimmers.CredentialSnifferUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = CredentialSniffer;
+			};
+			name = Debug;
+		};
+		2D69EDD22C1354DC005CFC75 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = D6RQ448SYV;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.wiimmers.CredentialSnifferUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = CredentialSniffer;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		2D69EDA12C1354D8005CFC75 /* Build configuration list for PBXProject "CredentialSniffer" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2D69EDC82C1354DC005CFC75 /* Debug */,
+				2D69EDC92C1354DC005CFC75 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		2D69EDCA2C1354DC005CFC75 /* Build configuration list for PBXNativeTarget "CredentialSniffer" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2D69EDCB2C1354DC005CFC75 /* Debug */,
+				2D69EDCC2C1354DC005CFC75 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		2D69EDCD2C1354DC005CFC75 /* Build configuration list for PBXNativeTarget "CredentialSnifferTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2D69EDCE2C1354DC005CFC75 /* Debug */,
+				2D69EDCF2C1354DC005CFC75 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		2D69EDD02C1354DC005CFC75 /* Build configuration list for PBXNativeTarget "CredentialSnifferUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2D69EDD12C1354DC005CFC75 /* Debug */,
+				2D69EDD22C1354DC005CFC75 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 2D69ED9E2C1354D8005CFC75 /* Project object */;
+}
