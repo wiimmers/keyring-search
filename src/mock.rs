@@ -47,25 +47,23 @@ pub struct MockData {
 
 /// Creates data in the Mock credential store to search
 fn default() -> Vec<MockData> {
-    let mut credentials = Vec::new();
-
-    credentials.push(MockData {
-        target: "target1".to_string(),
-        service: "service1".to_string(),
-        user: "user1".to_string(),
-    });
-
-    credentials.push(MockData {
-        target: "target2".to_string(),
-        service: "service2".to_string(),
-        user: "user2".to_string(),
-    });
-
-    credentials.push(MockData {
-        target: "target3".to_string(),
-        service: "service3".to_string(),
-        user: "user3".to_string(),
-    });
+    let credentials = vec![
+        MockData {
+            target: "target1".to_string(),
+            service: "service1".to_string(),
+            user: "user1".to_string(),
+        },
+        MockData {
+            target: "target2".to_string(),
+            service: "service2".to_string(),
+            user: "user2".to_string(),
+        },
+        MockData {
+            target: "target3".to_string(),
+            service: "service3".to_string(),
+            user: "user3".to_string(),
+        }
+    ];
 
     credentials
 }
@@ -85,7 +83,7 @@ impl CredentialSearchApi for MockCredentialSearch {
             "user" => search_by_user(regex, store),
             "service" => search_by_service(regex, store),
             "target" => search_by_target(regex, store),
-            _ => return Err(Error::Unexpected("Mock by parameter".to_string())),
+            _ => Err(Error::Unexpected("Mock by parameter".to_string())),
         }
     }
 }
