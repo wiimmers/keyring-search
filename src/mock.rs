@@ -62,7 +62,7 @@ fn default() -> Vec<MockData> {
             target: "target3".to_string(),
             service: "service3".to_string(),
             user: "user3".to_string(),
-        }
+        },
     ];
 
     credentials
