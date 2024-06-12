@@ -12,6 +12,8 @@ struct ContentView: View {
     @State var query: String = ""
     @State var isFocused: Bool = false
     @State var results: String = ""
+    @State var by: Int = 0
+    let options = ["user", "service"]
     
     var body: some View {
         VStack {
@@ -36,10 +38,20 @@ struct ContentView: View {
             .textFieldStyle(SearchBarStyle(isFocused: $isFocused))
             .autocorrectionDisabled(true)
             
-            DisplayResults(results: $results)
+            Picker(selection: $by, label: Text("Select by:")) {
+                ForEach(0..<2) { index in
+                    Text(self.options[index]).tag(index)
+                }
+            }
+            
+            VStack {
+                DisplayResults(results: $results)
+            }.scrollDisabled(false)
             
             Button("Search") {
-                results = decodeError(query: query)
+                SearchCredentials.addKeychainItem()
+                results = decodeError(by: options[by], query: query)
+                print("\(results)")
             }
         }
         .frame(width: 300)
@@ -105,9 +117,9 @@ struct SchemeBehavior: View {
     ContentView()
 }
 
-func decodeError(query: String) -> String {
+func decodeError(by: String, query: String) -> String {
     do {
-        let results = try SearchCredentials.search(by: "user", query: query)
+        let results = try SearchCredentials.search(by: by, query: query)
         return "\(results)"
     } catch SnifferErrors.notfound {
         return "No results found"

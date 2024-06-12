@@ -1,4 +1,4 @@
-## Keyring-search v0.2.0
+## Keyring-search v1
 [![build](https://github.com/wiimmers/keyring-search/actions/workflows/build.yml/badge.svg)](https://github.com/wiimmers/keyring-search/actions/workflows/build.yml)
 [![dependencies](https://deps.rs/repo/github/wiimmers/keyring-search/status.svg)](https://github.com/wiimmers/keyring-search)
 [![crates.io](https://img.shields.io/crates/v/keyring-search.svg?style=flat-square)](https://crates.io/crates/keyring-search)
@@ -104,21 +104,37 @@ Unexpected returns when an unexpected parameter is passed to or returned from a 
 ## Examples
 A working CLI application is bundled in the examples
 Default: `cargo run --example cli` (defaults to by target, requires a query entered at startup)
-By user: `cargo run --example cli -- --user test-user` 
-By service: `cargo run --example cli -- --service test-service` 
-By target: `cargo run --example cli -- --target test-target` 
+By user: 
+
+`cargo run --example cli -- --user test-user`
+
+By service: 
+
+`cargo run --example cli -- --service test-service` 
+
+By target: 
+
+`cargo run --example cli -- --target test-target` 
+
 Appending the subcommand `limit` to the end of any of these followed by a number will limit results to that amount.
+
 `cargo run --example cli -- --target test-target limit 2`
+
 Without the `limit` argument, the search defaults to displaying all results, although it is not necessary passing `all`
 gives the same result. 
+
 `cargo run --example cli -- --target test-target all`
 
-!!! IOS IS CURRENTLY UNDER DEVELOPMENT !!!
-Currently, the iOS module always returns no results, efforts are being made to alleviate this issue. 
-To build the iOS library for linking to the XCode project run `cargo lipo --manifest-path examples/ios/rs/Cargo.toml --release`
+The iOS module does not search the iCloud keychain used to store passwords. Instead
+it searches the app container for credentials. To build library for iOS use:
+
+`cargo lipo --manifest-path examples/ios/rs/Cargo.toml --release`
+
 in the project directory. This should be linked within the project already. Although the article is older and not all architectures 
 outlined are still in use, information about building rust for iOS can be 
-found here: [rust on ios](https://mozilla.github.io/firefox-browser-architecture/experiments/2017-09-06-rust-on-ios.html), 
+found here: [rust on ios](https://mozilla.github.io/firefox-browser-architecture/experiments/2017-09-06-rust-on-ios.html). It is worth noting the iOS application
+only simulates credential searching, by creating a credential when the search button is
+pressed. To get results, select 'user' and enter 'testAccount' then press the search button ('service' and 'testService' will also work) to see this functionality. 
 ## Client Testing
 Basic tests for the search platform.
 ## Platforms
