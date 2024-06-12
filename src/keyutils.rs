@@ -15,12 +15,20 @@ pub fn default_credential_search() -> Box<CredentialSearch> {
 }
 
 impl CredentialSearchApi for KeyutilsCredentialSearch {
-    fn by(&self, by: &str, query: &str) -> CredentialSearchResult {
-        search_by_keyring(by, query)
+    /// The default search for keyutils is in the 'session' keyring.
+    ///
+    /// If more control over the keyring is needed, call the
+    /// (search_by_keyring) function manually.
+    fn by(&self, _by: &str, query: &str) -> CredentialSearchResult {
+        search_by_keyring("session", query)
     }
 }
-// Search for credential items in the specified keyring.
-fn search_by_keyring(by: &str, query: &str) -> CredentialSearchResult {
+/// Search for credential items in the specified keyring.
+///
+/// To utilize search of any keyring, call this function
+/// directly. The generic platform independent search
+/// defaults to the `session` keyring.
+pub fn search_by_keyring(by: &str, query: &str) -> CredentialSearchResult {
     let by = match by {
         "thread" => KeyRingIdentifier::Thread,
         "process" => KeyRingIdentifier::Process,
@@ -38,7 +46,10 @@ fn search_by_keyring(by: &str, query: &str) -> CredentialSearchResult {
 
     let result = match ring.search(query) {
         Ok(result) => result,
-        Err(err) => return Err(ErrorCode::SearchError(err.to_string())),
+        Err(err) => match err {
+            linux_keyutils::KeyError::KeyDoesNotExist => return Err(ErrorCode::NoResults),
+            _ => return Err(ErrorCode::SearchError(err.to_string())),
+        },
     };
 
     let result_data = match result.metadata() {
@@ -110,7 +121,7 @@ fn get_permission_chars(permission_data: u8) -> String {
 #[cfg(test)]
 mod tests {
     use super::{get_key_type, get_permission_chars, KeyRing, KeyRingIdentifier};
-    use crate::{tests::generate_random_string, Limit, List, Search};
+    use crate::{tests::generate_random_string, Error, Limit, List, Search};
     use keyring::{credential::CredentialApi, keyutils::KeyutilsCredential};
     use std::collections::HashSet;
 
@@ -141,22 +152,22 @@ mod tests {
             credential.get_id().0,
             actual.description
         );
-        expected.push_str(format!("\tgid:\t{}\n", metadata.get_gid()).as_str());
-        expected.push_str(format!("\tuid:\t{}\n", metadata.get_uid()).as_str());
+        expected.push_str(format!("gid: {}\n", metadata.get_gid()).as_str());
+        expected.push_str(format!("uid: {}\n", metadata.get_uid()).as_str());
         expected.push_str(
             format!(
-                "\tperm:\t{}\n",
+                "perm: {}\n",
                 get_permission_chars(metadata.get_perms().bits().to_be_bytes()[0])
             )
             .as_str(),
         );
-        expected.push_str(format!("\tktype:\t{}\n", get_key_type(metadata.get_type())).as_str());
+        expected.push_str(format!("ktype: {}\n", get_key_type(metadata.get_type())).as_str());
 
         let query = format!("keyring-rs:{}@{}", name, name);
         let result = Search {
             inner: Box::new(super::KeyutilsCredentialSearch {}),
         }
-        .by("session", &query);
+        .by_user(&query);
         let list = List::list_credentials(result, Limit::All)
             .expect("Failed to parse string from HashMap result");
 
@@ -166,5 +177,15 @@ mod tests {
         entry
             .delete_password()
             .expect("Couldn't delete test-search-by-user");
+    }
+
+    #[test]
+    fn test_no_results() {
+        let name = generate_random_string();
+        let search = Search::new()
+            .expect("Error creating new search")
+            .by_user(&name);
+
+        assert!(matches!(search.unwrap_err(), Error::NoResults));
     }
 }

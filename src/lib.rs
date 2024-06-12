@@ -3,7 +3,7 @@
 # Keyring
 
 This is a cross-platform library for searching the platform specific keystore.
-[this library's entry on crates.io](https://crates.io/crates/keyring-search).
+[Crates.io](https://crates.io/crates/keyring-search).
 Currently supported platforms are
 Linux,
 Windows,
@@ -14,24 +14,6 @@ macOS, and iOS.
 This crate, originally planned as a feature for
 [keyring](https://crates.io/crates/keyring) provides a broad search of
 the platform specific keystores based on user provided search parameters.
-
-### Windows
-Windows machines have the option to search by 'user', 'service', or 'target'.
-
-### Linux - Secret Service
-If using the Linux Secret Service platform, the keystore is stored as a HashMap,
-and thus is more liberal with the keys that can be searched. The by method will take
-any parameter passed and attempt to search for the user defined key.
-
-### Linux - Keyutils
-If using the Linux Keyutils platform, the keystore is non persistent and is used more
-as a secure cache. However, this can still be searched. The breadth of the by method is large
-and encompasses the different types of keyrings available: "thread", "process", "session,
-"user", "user session", and "group". Because of this searching mechanism, the search has to be
-rather specific while limiting the different types of data to search, i.e. user, account, service.
-
-### MacOS
-MacOS machines have the option to search by 'account', 'service', or 'label.
  */
 
 pub use error::{Error, Result};
@@ -115,6 +97,12 @@ use mock as default;
 pub mod error;
 pub mod search;
 
+pub fn set_default_credential_search(default_search: Box<CredentialSearch>) -> Result<Search> {
+    Ok(Search {
+        inner: default_search,
+    })
+}
+
 fn default_credential_search() -> Result<Search> {
     let credentials = default::default_credential_search();
     Ok(Search { inner: credentials })
@@ -123,7 +111,12 @@ fn default_credential_search() -> Result<Search> {
 pub struct Search {
     inner: Box<CredentialSearch>,
 }
-
+/// The implementation of the Search structures methods.
+///
+/// The default search types are: Target, User, and Service.
+/// On linux-keyutils these all default to searching the 'session'
+/// keyring. If searching in a different keyring, utilize the
+/// platform specific `search_by_keyring` function
 impl Search {
     /// Create a new instance of the Credential Search.
     ///
@@ -131,19 +124,57 @@ impl Search {
     pub fn new() -> Result<Search> {
         default_credential_search()
     }
-    /// Specifies what parameter to search by and the query string
+    /// Specifies searching by target and the query string
     ///
-    /// Can return a [SearchError](Error::SearchError)
+    /// Can return:
+    /// [SearchError](Error::SearchError)
+    /// [NoResults](Error::NoResults)
+    /// [Unexpected](Error::Unexpected)
+    ///
     /// # Example
     ///     let search = keyring_search::Search::new().unwrap();
-    ///     let results = search.by("user", "Mr. Foo Bar");
-    pub fn by(&self, by: &str, query: &str) -> CredentialSearchResult {
-        self.inner.by(by, query)
+    ///     let results = search.by_target("Foo.app");
+    pub fn by_target(&self, query: &str) -> CredentialSearchResult {
+        self.inner.by("target", query)
+    }
+    /// Specifies searching by user and the query string
+    ///
+    /// Can return:
+    /// [SearchError](Error::SearchError)
+    /// [NoResults](Error::NoResults)
+    /// [Unexpected](Error::Unexpected)
+    ///
+    /// # Example
+    ///     let search = keyring_search::Search::new().unwrap();
+    ///     let results = search.by_user("Mr. Foo Bar");
+    pub fn by_user(&self, query: &str) -> CredentialSearchResult {
+        self.inner.by("user", query)
+    }
+    /// Specifies searching by service and the query string
+    ///
+    /// Can return:
+    /// [SearchError](Error::SearchError)
+    /// [NoResults](Error::NoResults)
+    /// [Unexpected](Error::Unexpected)
+    ///
+    /// # Example
+    ///     let search = keyring_search::Search::new().unwrap();
+    ///     let results = search.by_service("Bar inc.");
+    pub fn by_service(&self, query: &str) -> CredentialSearchResult {
+        self.inner.by("service", query)
     }
 }
 
 pub struct List {}
 
+/// Implementation of methods for the `List` structure.
+///
+/// `list_all`, lists all returned credentials
+/// `list_max`, lists a specified max amount of
+/// credentials. These are specified by calling [list_credentials](List::list_credentials).
+///
+/// Linux-keyutils search feature is limited to one result,
+/// no matter the `Limit`, one result will be returned.
 impl List {
     /// List the credentials with given search result
     ///
@@ -167,12 +198,12 @@ impl List {
                 for (outer_key, inner_map) in search_result {
                     output.push_str(&format!("{}\n", outer_key));
                     for (key, value) in inner_map {
-                        output.push_str(&format!("\t{}:\t{}\n", key, value));
+                        output.push_str(&format!("{}: {}\n", key, value));
                     }
                 }
                 Ok(output)
             }
-            Err(err) => Err(Error::SearchError(err.to_string())),
+            Err(err) => Err(err),
         }
     }
     /// List a certain amount of credential search results.
@@ -187,9 +218,9 @@ impl List {
         match result {
             Ok(search_result) => {
                 for (outer_key, inner_map) in search_result {
-                    output.push_str(&format!("{}\n", outer_key));
+                    output.push_str(&format!("Target: {}\n", outer_key));
                     for (key, value) in inner_map {
-                        output.push_str(&format!("\t{}:\t{}\n", key, value));
+                        output.push_str(&format!("{}: {}\n", key, value));
                     }
                     count += 1;
                     if count > max {
@@ -198,7 +229,7 @@ impl List {
                 }
                 Ok(output)
             }
-            Err(err) => Err(Error::SearchError(err.to_string())),
+            Err(err) => Err(err),
         }
     }
 }

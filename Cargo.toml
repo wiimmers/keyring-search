@@ -5,7 +5,7 @@ homepage = "https://github.com/wiimmers/keyring-search"
 license = "MIT OR Apache-2.0"
 name = "keyring-search"
 repository = "https://github.com/wiimmers/keyring-search.git"
-version = "0.2.2"
+version = "1.0.0"
 rust-version = "1.68"
 exclude = [".github/"]
 edition = "2021"
@@ -31,12 +31,13 @@ windows-test-threading = []
 
 [dependencies]
 lazy_static = "1"
+regex = { version = "1.10.4", optional = true }
 
 [target.'cfg(target_os = "macos")'.dependencies]
-security-framework = { version = "2.6", optional = true }
+security-framework = { git = "https://github.com/kornelski/rust-security-framework.git", optional = true }
 
 [target.'cfg(target_os = "ios")'.dependencies]
-security-framework = { version = "2.6", optional = true }
+security-framework = { git = "https://github.com/kornelski/rust-security-framework.git", optional = true }
 
 [target.'cfg(target_os = "linux")'.dependencies]
 secret-service = { version = "3", optional = true }
@@ -50,9 +51,17 @@ secret-service = { version = "3", optional = true }
 
 [target.'cfg(target_os = "windows")'.dependencies]
 byteorder = { version = "1.2", optional = true }
-regex = { version = "1.10.4", optional = true }
-windows-sys = { version = "0.52", features = ["Win32_Foundation", "Win32_Security_Credentials"], optional = true }
+windows-sys = { version = "0.52", features = ["Win32_Foundation", "Win32_Security_Credentials", "Win32_System_Time", "Win32_Storage_FileSystem"], optional = true }
 
 [dev-dependencies]
 keyring = "2.3.3"
 rand = "0.8"
+clap = { version = "4", features = ["derive", "wrap_help"] }
+
+[target.'cfg(target_os = "macos")'.dev-dependencies]
+security-framework-sys = "2.11.0"
+core-foundation = "0.9.4"
+
+[target.'cfg(target_os = "ios")'.dev-dependencies]
+security-framework-sys = "2.11.0"
+core-foundation = "0.9.4"
