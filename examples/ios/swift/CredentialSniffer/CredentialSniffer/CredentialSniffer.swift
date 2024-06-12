@@ -69,10 +69,12 @@ class SearchCredentials {
     static func addKeychainItem() {
         let account = "testAccount"
         let password = "testPassword".data(using: .utf8)!
+        let service = "testService"
 
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrAccount as String: account,
+            kSecAttrService as String: service,
             kSecValueData as String: password
         ]
 
