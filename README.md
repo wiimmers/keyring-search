@@ -45,8 +45,10 @@ println!("{}", list);
 
 ### Linux - Secret Service
 If using the Linux Secret Service platform, the keystore is stored as a HashMap, 
-and thus is more liberal with the keys that can be searched. The by method will take
-any parameter passed and attempt to search for the user defined key. 
+and thus is more liberal with the keys that can be searched. Using the different
+search functions will search for those keys, with the exception of `by_target` 
+searching for the key `application`. For more control over the `by` parameter,
+call the platform specific `search_items`.
 ```rust
 use keyring_search::{Search, Limit, List};
 
@@ -62,10 +64,10 @@ println!("{}", list);
 
 ### Linux - Keyutils 
 If using the Linux Keyutils platform, the keystore is non persistent and is used more
-To utilize search of any keyring, call this function directly. The generic platform 
-independent search defaults to the `session` keyring and ignores the `by` parameter. 
-To customize the search for other keyrings besides `session` use `search_by_keyring` 
-located in the keyutils module.
+as a secure cache. To utilize search of any keyring, call this function directly. 
+The generic platform independent search defaults to the `session` keyring and ignores the 
+`by` parameter. To customize the search for other keyrings besides `session` use 
+`search_by_keyring` located in the keyutils module.
 ```rust
 use keyring_search::{Search, Limit, List};
 
