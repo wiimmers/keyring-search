@@ -95,6 +95,7 @@ impl CredentialSearchApi for WinCredentialSearch {
     ///     let search = keyring_search::Search::new().unwrap();
     ///     let results = search.by_user("Mr. Foo Bar");
     fn by(&self, by: &str, query: &str) -> CredentialSearchResult {
+        let mut count = 0;
         let results = match search_type(by, query) {
             Ok(results) => results,
             Err(err) => return Err(err),
@@ -102,6 +103,7 @@ impl CredentialSearchApi for WinCredentialSearch {
 
         let mut outer_map: HashMap<String, HashMap<String, String>> = HashMap::new();
         for result in results {
+            count += 1;
             let mut inner_map: HashMap<String, String> = HashMap::new();
 
             inner_map.insert("Comment".to_string(), result.comment.clone());
@@ -109,8 +111,9 @@ impl CredentialSearchApi for WinCredentialSearch {
             inner_map.insert("Type".to_string(), match_cred_type(result.cred_type)?);
             inner_map.insert("Last Written".to_string(), result.last_written.to_string());
             inner_map.insert("Persist".to_string(), match_persist_type(result.persist)?);
+            inner_map.insert("Target".to_string(), result.target_name.to_string());
 
-            outer_map.insert(result.target_name.to_string(), inner_map);
+            outer_map.insert(count.to_string(), inner_map);
         }
 
         Ok(outer_map)
@@ -214,7 +217,12 @@ fn get_all_credentials() -> Vec<WinCredential> {
         });
     }
 
-    unsafe { CredFree(std::mem::transmute(credentials_ptr)) };
+    unsafe {
+        CredFree(std::mem::transmute::<
+            *mut *mut CREDENTIALW,
+            *const std::ffi::c_void,
+        >(credentials_ptr))
+    };
 
     entries
 }
@@ -363,7 +371,7 @@ mod tests {
         };
 
         let expected = format!(
-            "{}\nLast Written: {}\nType: {}\nPersist: {}\nUser: {}\nComment: {}\n",
+            "1\nTarget: {}\nLast Written: {}\nType: {}\nPersist: {}\nUser: {}\nComment: {}\n",
             name,
             unsafe { get_last_written(last_written_filetime) },
             match_cred_type(CRED_TYPE_GENERIC).expect("Failed to match expected cred type"),
@@ -449,8 +457,8 @@ mod tests {
         // one credential, we count the amount of lines returned.
         // To adjust this test: add extra random names, create
         // more credentials with test-user, adjust the limit and
-        // make the assert number a multiple of 6.
-        assert_eq!(6, lines);
+        // make the assert number a multiple of 7.
+        assert_eq!(7, lines);
     }
 
     #[test]

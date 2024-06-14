@@ -93,6 +93,7 @@ pub fn default_credential_search() -> Box<CredentialSearch> {
 }
 
 fn search_by_user(regex: Regex, store: MockCredentialStore) -> CredentialSearchResult {
+    let mut count = 0;
     let mut inner = store.inner.lock().expect("Cannot access mock store");
     let data = inner.get_mut();
     let mut results = Vec::new();
@@ -107,15 +108,18 @@ fn search_by_user(regex: Regex, store: MockCredentialStore) -> CredentialSearchR
     }
 
     for result in results {
+        count += 1;
         inner_map.insert("User".to_string(), result.user.clone());
-        inner_map.insert("Service".to_string(), result.target.clone());
-        outer_map.insert(result.target.clone(), inner_map.clone());
+        inner_map.insert("Service".to_string(), result.service.clone());
+        inner_map.insert("Target".to_string(), result.target.clone());
+        outer_map.insert(count.to_string(), inner_map.clone());
     }
 
     Ok(outer_map)
 }
 
 fn search_by_service(regex: Regex, store: MockCredentialStore) -> CredentialSearchResult {
+    let mut count = 0;
     let mut inner = store.inner.lock().expect("Cannot access mock store");
     let data = inner.get_mut();
     let mut results = Vec::new();
@@ -130,9 +134,11 @@ fn search_by_service(regex: Regex, store: MockCredentialStore) -> CredentialSear
     }
 
     for result in results {
+        count += 1;
         inner_map.insert("User".to_string(), result.user.clone());
-        inner_map.insert("Service".to_string(), result.target.clone());
-        outer_map.insert(result.target.clone(), inner_map.clone());
+        inner_map.insert("Service".to_string(), result.service.clone());
+        inner_map.insert("Target".to_string(), result.target.clone());
+        outer_map.insert(count.to_string(), inner_map.clone());
     }
 
     if outer_map.is_empty() {
@@ -143,6 +149,7 @@ fn search_by_service(regex: Regex, store: MockCredentialStore) -> CredentialSear
 }
 
 fn search_by_target(regex: Regex, store: MockCredentialStore) -> CredentialSearchResult {
+    let mut count = 0;
     let mut inner = store.inner.lock().expect("Cannot access mock store");
     let data = inner.get_mut();
     let mut results = Vec::new();
@@ -157,9 +164,11 @@ fn search_by_target(regex: Regex, store: MockCredentialStore) -> CredentialSearc
     }
 
     for result in results {
+        count += 1;
         inner_map.insert("User".to_string(), result.user.clone());
-        inner_map.insert("Service".to_string(), result.target.clone());
-        outer_map.insert(result.target.clone(), inner_map.clone());
+        inner_map.insert("Service".to_string(), result.service.clone());
+        inner_map.insert("Target".to_string(), result.target.clone());
+        outer_map.insert(count.to_string(), inner_map.clone());
     }
 
     Ok(outer_map)
@@ -181,7 +190,7 @@ mod tests {
             .expect("Failed to parse mock search result to string");
 
         let expected_str =
-            "target3\nUser: user3\nService: target3\ntarget2\nUser: user2\nService: target2\ntarget1\nUser: user1\nService: target1";
+            "3\nTarget: target3\nUser: user3\nService: service3\n2\nTarget: target2\nUser: user2\nService: service2\n1\nTarget: target1\nUser: user1\nService: service1";
 
         let expected_set: HashSet<&str> = expected_str.lines().collect();
         let result_set: HashSet<&str> = list.lines().collect();
@@ -202,7 +211,7 @@ mod tests {
             .expect("Failed to parse mock search result to string");
 
         let expected_str =
-            "target3\nUser: user3\nService: target3\ntarget2\nUser: user2\nService: target2\ntarget1\nUser: user1\nService: target1";
+            "3\nTarget: target3\nUser: user3\nService: service3\n2\nTarget: target2\nUser: user2\nService: service2\n1\nTarget: target1\nUser: user1\nService: service1";
 
         let expected_set: HashSet<&str> = expected_str.lines().collect();
         let result_set: HashSet<&str> = list.lines().collect();
@@ -223,7 +232,7 @@ mod tests {
             .expect("Failed to parse mock search result to string");
 
         let expected_str =
-            "target3\nUser: user3\nService: target3\ntarget2\nUser: user2\nService: target2\ntarget1\nUser: user1\nService: target1";
+            "1\nTarget: target3\nUser: user3\nService: service3\n2\nTarget: target2\nUser: user2\nService: service2\n3\nTarget: target1\nUser: user1\nService: service1";
 
         let expected_set: HashSet<&str> = expected_str.lines().collect();
         let result_set: HashSet<&str> = list.lines().collect();
@@ -255,6 +264,6 @@ mod tests {
 
         let result_set = list.lines().count();
 
-        assert_eq!(6, result_set);
+        assert_eq!(8, result_set);
     }
 }
