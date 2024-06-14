@@ -186,8 +186,7 @@ mod tests {
             .expect("Failed to create mock search")
             .by_user("user");
 
-        let list = List::list_credentials(result, Limit::All)
-            .expect("Failed to parse mock search result to string");
+        let list = List::list_credentials(&result, Limit::All);
 
         let expected_str =
             "3\nTarget: target3\nUser: user3\nService: service3\n2\nTarget: target2\nUser: user2\nService: service2\n1\nTarget: target1\nUser: user1\nService: service1";
@@ -207,8 +206,7 @@ mod tests {
             .expect("Failed to create mock search")
             .by_target("target");
 
-        let list = List::list_credentials(result, Limit::All)
-            .expect("Failed to parse mock search result to string");
+        let list = List::list_credentials(&result, Limit::All);
 
         let expected_str =
             "3\nTarget: target3\nUser: user3\nService: service3\n2\nTarget: target2\nUser: user2\nService: service2\n1\nTarget: target1\nUser: user1\nService: service1";
@@ -228,8 +226,7 @@ mod tests {
             .expect("Failed to create mock search")
             .by_service("service");
 
-        let list = List::list_credentials(result, Limit::All)
-            .expect("Failed to parse mock search result to string");
+        let list = List::list_credentials(&result, Limit::All);
 
         let expected_str =
             "1\nTarget: target3\nUser: user3\nService: service3\n2\nTarget: target2\nUser: user2\nService: service2\n3\nTarget: target1\nUser: user1\nService: service1";
@@ -259,8 +256,7 @@ mod tests {
             .expect("Failed to create mock search")
             .by_service("service");
 
-        let list = List::list_credentials(result, Limit::Max(2))
-            .expect("Failed to parse mock search result to string");
+        let list = List::list_credentials(&result, Limit::Max(2));
 
         let result_set = list.lines().count();
 
