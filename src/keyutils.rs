@@ -70,15 +70,12 @@ pub fn search_by_keyring(by: &str, query: &str) -> CredentialSearchResult {
     inner_map.insert("gid".to_string(), result_data.get_gid().to_string());
     inner_map.insert("uid".to_string(), result_data.get_uid().to_string());
     inner_map.insert("ktype".to_string(), key_type);
-
-    outer_map.insert(
-        format!(
-            "ID: {} Description: {}",
-            result.get_id().0,
-            result_data.get_description()
-        ),
-        inner_map,
+    inner_map.insert(
+        "description".to_string(),
+        result_data.get_description().to_string(),
     );
+
+    outer_map.insert(result.get_id().0.to_string(), inner_map);
 
     Ok(outer_map)
 }
@@ -147,13 +144,10 @@ mod tests {
             .metadata()
             .expect("Failed to get credential metadata");
 
-        let mut expected = format!(
-            "ID: {} Description: {}\n",
-            credential.get_id().0,
-            actual.description
-        );
+        let mut expected = format!("{}\n", credential.get_id().0,);
         expected.push_str(format!("gid: {}\n", metadata.get_gid()).as_str());
         expected.push_str(format!("uid: {}\n", metadata.get_uid()).as_str());
+        expected.push_str(format!("description: {}\n", actual.description).as_str());
         expected.push_str(
             format!(
                 "perm: {}\n",

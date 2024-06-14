@@ -42,6 +42,7 @@ impl CredentialSearchApi for SsCredentialSearch {
 /// 'username', 'application', 'service'. For most clients,
 /// this should be sufficient.
 pub fn search_items(by: &str, query: &str) -> CredentialSearchResult {
+    let mut count = 0;
     let ss = match SecretService::connect(EncryptionType::Plain) {
         Ok(connection) => connection,
         Err(err) => return Err(ErrorCode::SearchError(err.to_string())),
@@ -63,6 +64,7 @@ pub fn search_items(by: &str, query: &str) -> CredentialSearchResult {
         };
 
         for result in search_results {
+            count += 1;
             let attributes = match result.get_attributes() {
                 Ok(attributes) => attributes,
                 Err(err) => return Err(ErrorCode::SearchError(err.to_string())),
@@ -79,12 +81,12 @@ pub fn search_items(by: &str, query: &str) -> CredentialSearchResult {
                     inner_map.insert(key, value);
                 }
 
-                let label = match result.get_label() {
-                    Ok(label) => label,
+                match result.get_label() {
+                    Ok(label) => inner_map.insert("label".to_string(), label),
                     Err(err) => return Err(ErrorCode::SearchError(err.to_string())),
                 };
 
-                outer_map.insert(label.clone(), inner_map.clone());
+                outer_map.insert(count.to_string(), inner_map.clone());
             }
         }
     }
@@ -121,7 +123,8 @@ mod tests {
             .downcast_ref()
             .expect("Not a Secret Service credential");
 
-        let mut expected = format!("{}\n", actual.label);
+        let mut expected = format!("label: {}\n", actual.label);
+        expected.push_str("1\n");
         let attributes = &actual.attributes;
         for (key, value) in attributes {
             let attribute = format!("{}: {}\n", key, value);
@@ -176,7 +179,7 @@ mod tests {
         // To adjust this test: add extra random names, create
         // more credentials with test-user, adjust the limit and
         // make the assert number a multiple of 6.
-        assert_eq!(5, lines);
+        assert_eq!(6, lines);
 
         entry1
             .delete_password()

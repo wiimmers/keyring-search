@@ -28,6 +28,7 @@ enum MacSearchType {
 }
 // Perform search, returns a CredentialSearchResult.
 fn search(by: &str, query: &str) -> CredentialSearchResult {
+    let mut count = 0;
     let mut new_search = item::ItemSearchOptions::new();
 
     let search_default = &mut new_search
@@ -60,7 +61,8 @@ fn search(by: &str, query: &str) -> CredentialSearchResult {
     };
 
     for item in results {
-        match to_credential_search_result(item.simplify_dict(), &mut outer_map) {
+        count += 1;
+        match to_credential_search_result(item.simplify_dict(), &mut outer_map, count) {
             Ok(_) => {}
             Err(err) => return Err(err),
         }
@@ -75,15 +77,14 @@ fn search(by: &str, query: &str) -> CredentialSearchResult {
 fn to_credential_search_result(
     item: Option<HashMap<String, String>>,
     outer_map: &mut HashMap<String, HashMap<String, String>>,
+    count: u32,
 ) -> Result<()> {
-    let mut result = match item {
+    let result = match item {
         None => return Err(ErrorCode::NoResults),
         Some(map) => map,
     };
 
-    let label = result.remove("labl").unwrap_or("EMPTY LABEL".to_string());
-
-    outer_map.insert(label.to_string(), result);
+    outer_map.insert(count.to_string(), result);
 
     Ok(())
 }
@@ -129,6 +130,7 @@ mod tests {
     }
 
     fn test_search(by: &str) {
+        let result_count = 1;
         let name = generate_random_string();
         create_credential(&name, None);
 
@@ -219,13 +221,12 @@ mod tests {
                     }
                     _ => "Error getting type ID".to_string(),
                 };
-                if key_str == "labl".to_string() {
-                    expected.push_str(format!("{}\n", value_str).as_str());
-                } else if key_str == "crtr".to_string() {
+                if key_str == "crtr".to_string() {
                     expected.push_str(format!("{}: unknown\n", key_str).as_str());
                 } else {
                     expected.push_str(format!("{}: {}\n", key_str, value_str).as_str());
                 }
+                expected.push_str(format!("{}\n", &result_count.to_string()).as_str());
             }
         }
 
@@ -278,7 +279,7 @@ mod tests {
         // To adjust this test: add extra random names, create
         // more credentials with test-user, adjust the limit and
         // make the assert number a multiple of 6.
-        assert_eq!(7, lines);
+        assert_eq!(8, lines);
 
         delete_credential(&name1, Some("test-user"));
         delete_credential(&name2, Some("test-user"));
