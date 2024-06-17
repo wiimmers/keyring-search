@@ -10,6 +10,11 @@ pub trait CredentialSearchApi {
 pub type CredentialSearch = dyn CredentialSearchApi + Send + Sync;
 
 /// Type alias to shorten the long (and ugly) Credential Search Result HashMap.
+///
+/// `CredentialSearchResult` is a bilevel hashmap (HashMap<String, HashMap<String, String>)
+/// wrapped in a `Result`. The outer map String key corresponds to the ID of each search
+/// result. These IDs range from 1 to the size of the outer map. This ID can be used
+/// to select a credential and get its metadata housed in the inner map.
 pub type CredentialSearchResult = Result<HashMap<String, HashMap<String, String>>>;
 
 /// The API that [credential list](CredentialList) implements.

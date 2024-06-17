@@ -201,6 +201,7 @@ impl List {
                         output.push_str(&format!("{}: {}\n", key, value));
                     }
                 }
+                println!("Search returned {} results\n", search_result.keys().len());
                 output
             }
             Err(err) => err.to_string(),
@@ -218,7 +219,7 @@ impl List {
         match result {
             Ok(search_result) => {
                 for (outer_key, inner_map) in search_result {
-                    output.push_str(&format!("Target: {}\n", outer_key));
+                    output.push_str(&format!("{}\n", outer_key));
                     for (key, value) in inner_map {
                         output.push_str(&format!("{}: {}\n", key, value));
                     }
@@ -227,6 +228,7 @@ impl List {
                         break;
                     }
                 }
+                println!("Search returned {} results\n", search_result.keys().len());
                 output
             }
             Err(err) => err.to_string(),
@@ -236,7 +238,6 @@ impl List {
 
 #[cfg(test)]
 mod tests {
-
     pub fn generate_random_string_of_len(len: usize) -> String {
         // from the Rust Cookbook:
         // https://rust-lang-nursery.github.io/rust-cookbook/algorithms/randomness.html
