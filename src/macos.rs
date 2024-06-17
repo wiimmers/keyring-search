@@ -146,8 +146,7 @@ mod tests {
                 .by_target(&name),
             _ => panic!("unexpected search by parameter"),
         };
-        let list_result = List::list_credentials(search_result, Limit::All)
-            .expect("Failed to parse search result to string");
+        let list_result = List::list_credentials(&search_result, Limit::All);
 
         let keychain = get_keychain();
         let mut expected = String::new();
@@ -268,8 +267,7 @@ mod tests {
         let search = Search::new()
             .expect("Error creating test-max-result search")
             .by_user("test-user");
-        let list = List::list_credentials(search, Limit::Max(1))
-            .expect("Failed to parse results to string");
+        let list = List::list_credentials(&search, Limit::Max(1));
 
         let lines = list.lines().count();
 

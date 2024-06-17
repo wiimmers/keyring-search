@@ -181,7 +181,7 @@ impl List {
     /// Takes CredentialSearchResult type and converts to a string
     /// for printing. Matches the Limit type passed to constrain
     /// the amount of results added to the string
-    pub fn list_credentials(search_result: CredentialSearchResult, limit: Limit) -> Result<String> {
+    pub fn list_credentials(search_result: &CredentialSearchResult, limit: Limit) -> String {
         match limit {
             Limit::All => Self::list_all(search_result),
             Limit::Max(max) => Self::list_max(search_result, max),
@@ -191,7 +191,7 @@ impl List {
     ///
     /// Is the result of passing the Limit::All type
     /// to list_credentials.
-    fn list_all(result: CredentialSearchResult) -> Result<String> {
+    fn list_all(result: &CredentialSearchResult) -> String {
         let mut output = String::new();
         match result {
             Ok(search_result) => {
@@ -201,9 +201,10 @@ impl List {
                         output.push_str(&format!("{}: {}\n", key, value));
                     }
                 }
-                Ok(output)
+                println!("Search returned {} results\n", search_result.keys().len());
+                output
             }
-            Err(err) => Err(err),
+            Err(err) => err.to_string(),
         }
     }
     /// List a certain amount of credential search results.
@@ -212,13 +213,13 @@ impl List {
     /// to list_credentials. The 64 bit integer represents
     /// the total of the results passed.
     /// They are not sorted or filtered.
-    fn list_max(result: CredentialSearchResult, max: i64) -> Result<String> {
+    fn list_max(result: &CredentialSearchResult, max: i64) -> String {
         let mut output = String::new();
         let mut count = 1;
         match result {
             Ok(search_result) => {
                 for (outer_key, inner_map) in search_result {
-                    output.push_str(&format!("Target: {}\n", outer_key));
+                    output.push_str(&format!("{}\n", outer_key));
                     for (key, value) in inner_map {
                         output.push_str(&format!("{}: {}\n", key, value));
                     }
@@ -227,16 +228,16 @@ impl List {
                         break;
                     }
                 }
-                Ok(output)
+                println!("Search returned {} results\n", search_result.keys().len());
+                output
             }
-            Err(err) => Err(err),
+            Err(err) => err.to_string(),
         }
     }
 }
 
 #[cfg(test)]
 mod tests {
-
     pub fn generate_random_string_of_len(len: usize) -> String {
         // from the Rust Cookbook:
         // https://rust-lang-nursery.github.io/rust-cookbook/algorithms/randomness.html

@@ -162,8 +162,7 @@ mod tests {
             inner: Box::new(super::KeyutilsCredentialSearch {}),
         }
         .by_user(&query);
-        let list = List::list_credentials(result, Limit::All)
-            .expect("Failed to parse string from HashMap result");
+        let list = List::list_credentials(&result, Limit::All);
 
         let expected_set: HashSet<&str> = expected.lines().collect();
         let result_set: HashSet<&str> = list.lines().collect();

@@ -115,8 +115,7 @@ mod tests {
         let result = Search::new()
             .expect("Failed to build search")
             .by_service(&name);
-        let list = List::list_credentials(result, Limit::All)
-            .expect("Failed to parse string from HashMap result");
+        let list = List::list_credentials(&result, Limit::All);
 
         let actual: &SsCredential = entry
             .get_credential()
@@ -168,8 +167,7 @@ mod tests {
         let search = Search::new()
             .expect("Error creating test-max-result search")
             .by_user("test-user");
-        let list = List::list_credentials(search, Limit::Max(1))
-            .expect("Failed to parse results to string");
+        let list = List::list_credentials(&search, Limit::Max(1));
 
         let lines = list.lines().count();
 

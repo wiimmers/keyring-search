@@ -15,12 +15,12 @@ Defaults to all
 extern crate keyring_search;
 
 use clap::Parser;
-use keyring_search::{Error, Limit, List, Search};
+use keyring_search::{Limit, List, Search};
 use std::io::{self, Write};
 
 fn main() {
     let args: Cli = Cli::parse();
-    let list: Result<String, Error>;
+    let list: String;
 
     let limit = match args.limit {
         Some(Command::All) => Limit::All,
@@ -35,13 +35,13 @@ fn main() {
 
     if let Some(query) = args.service {
         let result = search.by_service(&query);
-        list = List::list_credentials(result, limit);
+        list = List::list_credentials(&result, limit);
     } else if let Some(query) = args.target {
         let result = search.by_target(&query);
-        list = List::list_credentials(result, limit);
+        list = List::list_credentials(&result, limit);
     } else if let Some(query) = args.user {
         let result = search.by_user(&query);
-        list = List::list_credentials(result, limit);
+        list = List::list_credentials(&result, limit);
     } else {
         print!("Search defaulted to `by_target`, enter query: ");
         let mut arg = String::new();
@@ -50,18 +50,10 @@ fn main() {
         io::stdin().read_line(&mut arg).expect("Invalid input arg");
 
         let result = search.by_target(&arg.trim());
-        list = List::list_credentials(result, limit);
+        list = List::list_credentials(&result, limit);
     }
 
-    match list {
-        Ok(list) => println!("{list}"),
-        Err(err) => match err {
-            Error::NoResults => eprintln!("No results returned for query"),
-            Error::SearchError(err) => eprintln!("{}", err.to_string()),
-            Error::Unexpected(err) => eprintln!("{}", err.to_string()),
-            _ => eprintln!("Unmapped error"),
-        },
-    }
+    println!("{list}")
 }
 
 /// Keyring-search CLI:
