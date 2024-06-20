@@ -16,6 +16,8 @@ This crate, originally planned as a feature for
 the platform specific keystores based on user provided search parameters.
  */
 
+use std::collections::HashMap;
+
 pub use error::{Error, Result};
 pub use search::{CredentialSearch, CredentialSearchResult, Limit};
 // Included keystore implementations and default choice thereof.
@@ -195,9 +197,20 @@ impl List {
         let mut output = String::new();
         match result {
             Ok(search_result) => {
-                for (outer_key, inner_map) in search_result {
+                let mut entries: Vec<(String, HashMap<String, String>)> = search_result
+                    .iter()
+                    .map(|(k, v)| (k.clone(), v.clone()))
+                    .collect();
+                entries.sort_by_key(|(k, _)| k.parse::<i32>().unwrap_or(0));
+
+                for (outer_key, inner_map) in entries {
                     output.push_str(&format!("{}\n", outer_key));
-                    for (key, value) in inner_map {
+                    let mut metadata: Vec<(String, String)> = inner_map
+                        .iter()
+                        .map(|(k, v)| (k.clone(), v.clone()))
+                        .collect();
+                    metadata.sort_by(|a, b| a.0.cmp(&b.0));
+                    for (key, value) in metadata {
                         output.push_str(&format!("{}: {}\n", key, value));
                     }
                 }
@@ -212,15 +225,25 @@ impl List {
     /// Is the result of passing the Limit::Max(i64) type
     /// to list_credentials. The 64 bit integer represents
     /// the total of the results passed.
-    /// They are not sorted or filtered.
     fn list_max(result: &CredentialSearchResult, max: i64) -> String {
         let mut output = String::new();
         let mut count = 1;
         match result {
             Ok(search_result) => {
-                for (outer_key, inner_map) in search_result {
+                let mut entries: Vec<(String, HashMap<String, String>)> = search_result
+                    .iter()
+                    .map(|(k, v)| (k.clone(), v.clone()))
+                    .collect();
+                entries.sort_by_key(|(k, _)| k.parse::<i32>().unwrap_or(0));
+
+                for (outer_key, inner_map) in entries {
                     output.push_str(&format!("{}\n", outer_key));
-                    for (key, value) in inner_map {
+                    let mut metadata: Vec<(String, String)> = inner_map
+                        .iter()
+                        .map(|(k, v)| (k.clone(), v.clone()))
+                        .collect();
+                    metadata.sort_by(|a, b| a.0.cmp(&b.0));
+                    for (key, value) in metadata {
                         output.push_str(&format!("{}: {}\n", key, value));
                     }
                     count += 1;
