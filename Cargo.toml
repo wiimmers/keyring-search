@@ -30,6 +30,7 @@ linux-default-keyutils = ["linux-keyutils"]
 windows-test-threading = []
 
 [dependencies]
+lazy_static = "1"
 regex = { version = "1.10.4", optional = true }
 
 [target.'cfg(target_os = "macos")'.dependencies]
