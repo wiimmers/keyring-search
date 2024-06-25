@@ -28,14 +28,14 @@ lazy_static::lazy_static! {
     static ref GLOBAL_CREDENTIAL_STORE: MockCredentialStore<MockData> = MockCredentialStore::default();
 }
 
-fn get_store() -> &'static MockCredentialStore<MockData> {
+pub fn get_store() -> &'static MockCredentialStore<MockData> {
     &GLOBAL_CREDENTIAL_STORE
 }
 
 pub trait CredentialFields {
-    fn service(&self) -> &String;
-    fn target(&self) -> &String;
-    fn user(&self) -> &String;
+    fn service(&self) -> String;
+    fn target(&self) -> String;
+    fn user(&self) -> String;
 }
 
 pub trait CredentialStore<T> {
@@ -79,14 +79,14 @@ pub struct MockData {
 }
 
 impl CredentialFields for MockData {
-    fn service(&self) -> &String {
-        &self.service
+    fn service(&self) -> String {
+        self.service.clone()
     }
-    fn target(&self) -> &String {
-        &self.target
+    fn target(&self) -> String {
+        self.target.clone()
     }
-    fn user(&self) -> &String {
-        &self.user
+    fn user(&self) -> String {
+        self.user.clone()
     }
 }
 
@@ -126,7 +126,7 @@ fn search_by_user(regex: Regex) -> CredentialSearchResult {
     let mut inner_map: HashMap<String, String> = HashMap::new();
 
     for credential in data.iter() {
-        if regex.is_match(credential.user()) {
+        if regex.is_match(&credential.user()) {
             results.push(credential);
         }
     }
@@ -162,7 +162,7 @@ fn search_by_service(regex: Regex) -> CredentialSearchResult {
     let mut inner_map: HashMap<String, String> = HashMap::new();
 
     for credential in data.iter() {
-        if regex.is_match(credential.service()) {
+        if regex.is_match(&credential.service()) {
             results.push(credential);
         }
     }
@@ -198,7 +198,7 @@ fn search_by_target(regex: Regex) -> CredentialSearchResult {
     let mut inner_map: HashMap<String, String> = HashMap::new();
 
     for credential in data.iter() {
-        if regex.is_match(credential.target()) {
+        if regex.is_match(&credential.target()) {
             results.push(credential);
         }
     }
