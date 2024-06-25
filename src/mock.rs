@@ -21,7 +21,7 @@ use std::collections::HashMap;
 
 use std::sync::{Arc, RwLock, RwLockReadGuard};
 
-use super::error::{Error as ErrorCode, Result};
+use super::error::Error as ErrorCode;
 use super::search::{CredentialSearch, CredentialSearchApi, CredentialSearchResult};
 
 lazy_static::lazy_static! {
@@ -29,7 +29,7 @@ lazy_static::lazy_static! {
 }
 
 fn get_store() -> &'static MockCredentialStore<MockData> {
-    &*GLOBAL_CREDENTIAL_STORE
+    &GLOBAL_CREDENTIAL_STORE
 }
 
 pub trait CredentialFields {
@@ -126,7 +126,7 @@ fn search_by_user(regex: Regex) -> CredentialSearchResult {
     let mut inner_map: HashMap<String, String> = HashMap::new();
 
     for credential in data.iter() {
-        if regex.is_match(&credential.user()) {
+        if regex.is_match(credential.user()) {
             results.push(credential);
         }
     }
@@ -137,6 +137,10 @@ fn search_by_user(regex: Regex) -> CredentialSearchResult {
         inner_map.insert("Service".to_string(), result.service.clone());
         inner_map.insert("Target".to_string(), result.target.clone());
         outer_map.insert(count.to_string(), inner_map.clone());
+    }
+
+    if count == 0 {
+        return Err(ErrorCode::NoResults);
     }
 
     Ok(outer_map)
@@ -158,7 +162,7 @@ fn search_by_service(regex: Regex) -> CredentialSearchResult {
     let mut inner_map: HashMap<String, String> = HashMap::new();
 
     for credential in data.iter() {
-        if regex.is_match(&credential.service()) {
+        if regex.is_match(credential.service()) {
             results.push(credential);
         }
     }
@@ -169,6 +173,10 @@ fn search_by_service(regex: Regex) -> CredentialSearchResult {
         inner_map.insert("Service".to_string(), result.service.clone());
         inner_map.insert("Target".to_string(), result.target.clone());
         outer_map.insert(count.to_string(), inner_map.clone());
+    }
+
+    if count == 0 {
+        return Err(ErrorCode::NoResults);
     }
 
     Ok(outer_map)
@@ -190,7 +198,7 @@ fn search_by_target(regex: Regex) -> CredentialSearchResult {
     let mut inner_map: HashMap<String, String> = HashMap::new();
 
     for credential in data.iter() {
-        if regex.is_match(&credential.target()) {
+        if regex.is_match(credential.target()) {
             results.push(credential);
         }
     }
@@ -203,6 +211,10 @@ fn search_by_target(regex: Regex) -> CredentialSearchResult {
         outer_map.insert(count.to_string(), inner_map.clone());
     }
 
+    if count == 0 {
+        return Err(ErrorCode::NoResults);
+    }
+
     Ok(outer_map)
 }
 
@@ -212,7 +224,7 @@ pub fn default_credential_search() -> Box<CredentialSearch> {
 
 #[cfg(test)]
 mod tests {
-    use super::{get_store, MockCredentialStore, MockData, GLOBAL_CREDENTIAL_STORE};
+    use super::{get_store, MockData};
     use crate::mock::CredentialStore;
     use crate::tests::generate_random_string;
     use crate::{mock, set_default_credential_search, Error, Limit, List};
@@ -256,8 +268,6 @@ mod tests {
         store.add(data4);
 
         [name1, name2, name3, name4]
-
-
     }
 
     #[test]
@@ -269,8 +279,10 @@ mod tests {
 
         let list = List::list_credentials(&result, Limit::All);
 
-        let expected_str =
-            "3\nTarget: target3\nUser: user3\nService: service3\n2\nTarget: target2\nUser: user2\nService: service2\n1\nTarget: target1\nUser: user1\nService: service1";
+        let expected_str = format!(
+            "1\nTarget: {}\nService: {}\nUser: {}\n",
+            &names[1], &names[1], &names[1]
+        );
 
         let expected_set: HashSet<&str> = expected_str.lines().collect();
         let result_set: HashSet<&str> = list.lines().collect();
@@ -290,8 +302,10 @@ mod tests {
 
         let list = List::list_credentials(&result, Limit::All);
 
-        let expected_str =
-            "3\nTarget: target3\nUser: user3\nService: service3\n2\nTarget: target2\nUser: user2\nService: service2\n1\nTarget: target1\nUser: user1\nService: service1";
+        let expected_str = format!(
+            "1\nTarget: {}\nService: {}\nUser: {}\n",
+            &names[1], &names[1], &names[1]
+        );
 
         let expected_set: HashSet<&str> = expected_str.lines().collect();
         let result_set: HashSet<&str> = list.lines().collect();
@@ -311,8 +325,10 @@ mod tests {
 
         let list = List::list_credentials(&result, Limit::All);
 
-        let expected_str =
-            "1\nTarget: target3\nUser: user3\nService: service3\n2\nTarget: target2\nUser: user2\nService: service2\n3\nTarget: target1\nUser: user1\nService: service1";
+        let expected_str = format!(
+            "1\nTarget: {}\nService: {}\nUser: {}\n",
+            &names[1], &names[1], &names[1]
+        );
 
         let expected_set: HashSet<&str> = expected_str.lines().collect();
         let result_set: HashSet<&str> = list.lines().collect();
@@ -325,10 +341,10 @@ mod tests {
 
     #[test]
     fn no_results() {
-        let names = searchable_entries();
+        let name = generate_random_string();
         let result = set_default_credential_search(mock::default_credential_search())
             .expect("Failed to create mock search")
-            .by_service(&names[1])
+            .by_service(&name)
             .unwrap_err();
 
         assert!(matches!(result, Error::NoResults));
@@ -336,10 +352,31 @@ mod tests {
 
     #[test]
     fn test_max_result() {
-        let names = searchable_entries();
+        let name = generate_random_string();
+        let store = get_store();
+        let credential1 = MockData {
+            service: "test-service1".to_string(),
+            target: "test-target1".to_string(),
+            user: name.clone(),
+        };
+
+        let credential2 = MockData {
+            service: "test-service2".to_string(),
+            target: "test-target2".to_string(),
+            user: name.clone(),
+        };
+
+        let credential3 = MockData {
+            service: "test-service3".to_string(),
+            target: "test-target3".to_string(),
+            user: name.clone(),
+        };
+        store.add(credential1);
+        store.add(credential2);
+        store.add(credential3);
         let result = set_default_credential_search(mock::default_credential_search())
             .expect("Failed to create mock search")
-            .by_service(&names[1]);
+            .by_user(&name);
 
         let list = List::list_credentials(&result, Limit::Max(2));
 

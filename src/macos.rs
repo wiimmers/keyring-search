@@ -34,7 +34,8 @@ fn search(by: &str, query: &str) -> CredentialSearchResult {
     let search_default = &mut new_search
         .class(item::ItemClass::generic_password())
         .limit(item::Limit::All)
-        .load_attributes(true);
+        .load_attributes(true)
+        .case_insensitive(Some(true));
 
     let by = match by.to_ascii_lowercase().as_str() {
         "target" => MacSearchType::Label,
