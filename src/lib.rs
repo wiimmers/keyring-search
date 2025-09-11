@@ -264,9 +264,9 @@ mod tests {
     pub fn generate_random_string_of_len(len: usize) -> String {
         // from the Rust Cookbook:
         // https://rust-lang-nursery.github.io/rust-cookbook/algorithms/randomness.html
-        use rand::{distributions::Alphanumeric, thread_rng, Rng};
-        thread_rng()
-            .sample_iter(&Alphanumeric)
+        use rand::{rng, Rng};
+        rng()
+            .sample_iter(rand::distr::Alphanumeric)
             .take(len)
             .map(char::from)
             .collect()
