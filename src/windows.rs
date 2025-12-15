@@ -231,8 +231,13 @@ unsafe fn get_last_written(last_written: FILETIME) -> HumanTime {
     let mut local_filetime: FILETIME = std::mem::zeroed();
     let mut system_time: SYSTEMTIME = std::mem::zeroed();
     let local: TIME_ZONE_INFORMATION = std::mem::zeroed();
-    FileTimeToLocalFileTime(&last_written, &mut local_filetime as *mut FILETIME);
-    LocalFileTimeToLocalSystemTime(&local, &local_filetime, &mut system_time as *mut SYSTEMTIME);
+    let rc1 = FileTimeToLocalFileTime(&last_written, &mut local_filetime as *mut FILETIME);
+    let rc2 = LocalFileTimeToLocalSystemTime(
+        &local,
+        &local_filetime,
+        &mut system_time as *mut SYSTEMTIME,
+    );
+    println!("DEBUG: rc1: {rc1}, rc2: {rc2}");
     HumanTime {
         hour: system_time.wHour,
         minute: system_time.wMinute,
