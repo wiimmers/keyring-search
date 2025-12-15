@@ -10,14 +10,17 @@ use windows_sys::Win32::System::Time::{LocalFileTimeToLocalSystemTime, TIME_ZONE
 use super::error::{Error as ErrorCode, Result};
 use super::search::{CredentialSearch, CredentialSearchApi, CredentialSearchResult};
 
+// On Windows, the days of the week are 0-based (Sunday = 0)
+// while the months are 1-based (January = 1).
+// See https://learn.microsoft.com/en-us/windows/win32/api/minwinbase/ns-minwinbase-systemtime
 static DAYS: [&str; 7] = [
+    "Sunday",
     "Monday",
     "Tuesday",
     "Wednesday",
     "Thursday",
     "Friday",
     "Saturday",
-    "Sunday",
 ];
 static MONTHS: [&str; 12] = [
     "January",
@@ -231,6 +234,7 @@ unsafe fn get_last_written(last_written: FILETIME) -> HumanTime {
     let mut local_filetime: FILETIME = std::mem::zeroed();
     let mut system_time: SYSTEMTIME = std::mem::zeroed();
     let local: TIME_ZONE_INFORMATION = std::mem::zeroed();
+
     let rc1 = FileTimeToLocalFileTime(&last_written, &mut local_filetime as *mut FILETIME);
     let rc2 = LocalFileTimeToLocalSystemTime(
         &local,
@@ -245,7 +249,7 @@ unsafe fn get_last_written(last_written: FILETIME) -> HumanTime {
         hour: system_time.wHour,
         minute: system_time.wMinute,
         second: system_time.wSecond,
-        day_of_week: DAYS[system_time.wDayOfWeek as usize - 1].to_string(),
+        day_of_week: DAYS[system_time.wDayOfWeek as usize].to_string(),
         day: system_time.wDay,
         month: MONTHS[system_time.wMonth as usize - 1].to_string(),
         year: system_time.wYear,
