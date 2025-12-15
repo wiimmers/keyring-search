@@ -237,7 +237,10 @@ unsafe fn get_last_written(last_written: FILETIME) -> HumanTime {
         &local_filetime,
         &mut system_time as *mut SYSTEMTIME,
     );
-    println!("DEBUG: rc1: {rc1}, rc2: {rc2}");
+    println!(
+        "DEBUG: rc1: {rc1}, rc2: {rc2}, yyyy-mm-dd: {}.{}.{}, day_of_week: {}",
+        system_time.wYear, system_time.wMonth, system_time.wDay, system_time.wDayOfWeek
+    );
     HumanTime {
         hour: system_time.wHour,
         minute: system_time.wMinute,
