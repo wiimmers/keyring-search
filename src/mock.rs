@@ -40,7 +40,7 @@ pub trait CredentialFields {
 
 pub trait CredentialStore<T> {
     fn add(&self, credential: T);
-    fn get(&self) -> RwLockReadGuard<Vec<Arc<T>>>;
+    fn get(&self) -> RwLockReadGuard<'_, Vec<Arc<T>>>;
 }
 
 #[derive(Debug)]
@@ -64,7 +64,7 @@ impl<T: CredentialFields> CredentialStore<T> for MockCredentialStore<T> {
             .expect("Rwlock poisoned in MockCredentialStore add method");
         store.push(Arc::new(credential))
     }
-    fn get(&self) -> RwLockReadGuard<Vec<Arc<T>>> {
+    fn get(&self) -> RwLockReadGuard<'_, Vec<Arc<T>>> {
         self.inner
             .read()
             .expect("Rwlock poisoned in MockCredentialStore get method")
