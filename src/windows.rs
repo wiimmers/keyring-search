@@ -475,4 +475,109 @@ mod tests {
             "Returned an empty value"
         );
     }
+
+    #[test]
+    fn last_written_filetime() {
+        // Generate set of FILETIME values to cover all months and days and
+        // confirm "day_of_week" and "month" strings are correct.
+        // Use 12:00pm UTC to make sure timezone differences are accounted for.
+        // The year 2020 had first day of each month covering all days of the week.
+        // The hex values were generated from
+        // https://www.silisoftware.com/tools/date.php?inputdate=jan+1+2020+12%3A00&inputformat=text
+        let test_filetimes: Vec<FILETIME> = vec![
+            FILETIME {
+                dwLowDateTime: 0xFE39E000,
+                dwHighDateTime: 0x01D5C09A,
+            }, // Jan 1, 2020 Wed
+            FILETIME {
+                dwLowDateTime: 0x21082000,
+                dwHighDateTime: 0x01D5D8F7,
+            }, // Feb 1, 2020 Sat
+            FILETIME {
+                dwLowDateTime: 0xEF02E000,
+                dwHighDateTime: 0x01D5EFC0,
+            }, // Mar 1, 2020 Sun
+            FILETIME {
+                dwLowDateTime: 0x11D12000,
+                dwHighDateTime: 0x01D6081D,
+            }, // Apr 1, 2020 Wed
+            FILETIME {
+                dwLowDateTime: 0x0A35A000,
+                dwHighDateTime: 0x01D61FB0,
+            }, // May 1, 2020 Fri
+            FILETIME {
+                dwLowDateTime: 0x2D03E000,
+                dwHighDateTime: 0x01D6380C,
+            }, // Jun 1, 2020 Mon
+            FILETIME {
+                dwLowDateTime: 0x25686000,
+                dwHighDateTime: 0x01D64F9F,
+            }, // Jul 1, 2020 Wed
+            FILETIME {
+                dwLowDateTime: 0x4836A000,
+                dwHighDateTime: 0x01D667FB,
+            }, // Aug 1, 2020 Sat
+            FILETIME {
+                dwLowDateTime: 0x6B04E000,
+                dwHighDateTime: 0x01D68057,
+            }, // Sep 1, 2020 Tue
+            FILETIME {
+                dwLowDateTime: 0x63696000,
+                dwHighDateTime: 0x01D697EA,
+            }, // Oct 1, 2020 Thu
+            FILETIME {
+                dwLowDateTime: 0x8637A000,
+                dwHighDateTime: 0x01D6B046,
+            }, // Nov 1, 2020 Sun
+            FILETIME {
+                dwLowDateTime: 0x7E9C2000,
+                dwHighDateTime: 0x01D6C7D9,
+            }, // Dec 1, 2020 Tue
+        ];
+        let expected_months: Vec<&str> = vec![
+            "January",
+            "February",
+            "March",
+            "April",
+            "May",
+            "June",
+            "July",
+            "August",
+            "September",
+            "October",
+            "November",
+            "December",
+        ];
+        let expected_day_of_weeks: Vec<&str> = vec![
+            "Wednesday",
+            "Saturday",
+            "Sunday",
+            "Wednesday",
+            "Friday",
+            "Monday",
+            "Wednesday",
+            "Saturday",
+            "Tuesday",
+            "Thursday",
+            "Sunday",
+            "Tuesday",
+        ];
+        for (i, ft) in test_filetimes.iter().enumerate() {
+            let human_time = unsafe { get_last_written(*ft) };
+            println!("Testing FILETIME  {}", human_time.to_string());
+            assert_eq!(
+                human_time.month, expected_months[i],
+                "Month string does not match expected value"
+            );
+            assert_eq!(
+                human_time.day_of_week, expected_day_of_weeks[i],
+                "Day of week string does not match expected value"
+            );
+            assert_eq!(
+                human_time.year, 2020,
+                "Year does not match expected value of 2020"
+            );
+            assert_eq!(human_time.day, 1, "Day does not match expected value of 1");
+        }
+    }
 }
