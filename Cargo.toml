@@ -54,7 +54,7 @@ byteorder = { version = "1.2", optional = true }
 windows-sys = { version = "0.52", features = ["Win32_Foundation", "Win32_Security_Credentials", "Win32_System_Time", "Win32_Storage_FileSystem"], optional = true }
 
 [dev-dependencies]
-keyring = "2.3.3"
+keyring = "3.3.0"
 rand = "0.8"
 clap = { version = "4", features = ["derive", "wrap_help"] }
 
