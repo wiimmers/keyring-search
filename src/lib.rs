@@ -214,7 +214,6 @@ impl List {
                         output.push_str(&format!("{}: {}\n", key, value));
                     }
                 }
-                println!("Search returned {} results\n", search_result.keys().len());
                 output
             }
             Err(err) => err.to_string(),
