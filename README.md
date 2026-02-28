@@ -1,4 +1,4 @@
-## Keyring-search v1
+## keyring-search v1
 [![build](https://github.com/wiimmers/keyring-search/actions/workflows/build.yml/badge.svg)](https://github.com/wiimmers/keyring-search/actions/workflows/build.yml)
 [![dependencies](https://deps.rs/repo/github/wiimmers/keyring-search/status.svg)](https://github.com/wiimmers/keyring-search)
 [![crates.io](https://img.shields.io/crates/v/keyring-search.svg?style=flat-square)](https://crates.io/crates/keyring-search)
