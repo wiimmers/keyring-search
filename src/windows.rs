@@ -99,10 +99,7 @@ impl CredentialSearchApi for WinCredentialSearch {
     ///     let results = search.by_user("Mr. Foo Bar");
     fn by(&self, by: &str, query: &str) -> CredentialSearchResult {
         let mut count = 0;
-        let results = match search_type(by, query) {
-            Ok(results) => results,
-            Err(err) => return Err(err),
-        };
+        let results = search_type(by, query)?;
 
         let mut outer_map: HashMap<String, HashMap<String, String>> = HashMap::new();
         for result in results {
